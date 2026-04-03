@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 100">
+  <!-- Knekht Black: Tower body + triangular top + 1 vertical line -->
+  <!-- Triangular top (head) -->
+  <path d="M 36,12 L 28,32 L 62,32 L 54,12 Z"
+        fill="#000000" stroke="#411b1a" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Tower body -->
+  <path d="M 22,88 L 14,48 L 14,32 L 76,32 L 76,48 L 68,88 Z"
+        fill="#000000" stroke="#411b1a" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Center vertical line -->
+  <line x1="45" y1="40" x2="45" y2="82"
+        stroke="#fffef7" stroke-width="4" stroke-linecap="butt"/>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 100">
+  <!-- Konnet Black: Triangle top + elliptical middle + white belt + tower body + 2 lines -->
+  <!-- Triangle top -->
+  <path d="M 36,8 L 28,24 L 62,24 L 54,8 Z"
+        fill="#000000" stroke="#411b1a" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Elliptical/shield middle element -->
+  <path d="M 28,32 A 16,8 0 0 1 62,32 L 62,40 L 28,40 Z"
+        fill="#000000" stroke="#411b1a" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- White belt (inverted from white piece) -->
+  <path d="M 18,48 A 18,5 0 0 1 72,48 L 72,54 L 18,54 Z"
+        fill="#ffffff" stroke="#411b1a" stroke-width="2.5"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Tower body -->
+  <path d="M 22,90 L 14,56 L 14,40 L 76,40 L 76,56 L 68,90 Z"
+        fill="#000000" stroke="#411b1a" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Left vertical line (shorter) -->
+  <line x1="38" y1="58" x2="38" y2="78"
+        stroke="#fffef7" stroke-width="4" stroke-linecap="butt"/>
+  <!-- Right vertical line (full) -->
+  <line x1="50" y1="58" x2="50" y2="84"
+        stroke="#fffef7" stroke-width="4" stroke-linecap="butt"/>
+</svg>

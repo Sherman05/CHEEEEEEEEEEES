@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 100">
+  <!-- Scout White: Tower + triangle top + elliptical middle + 2 lines + gray pennant + gray belt -->
+  <!-- Triangle top -->
+  <path d="M 30,8 L 22,22 L 48,22 L 40,8 Z"
+        fill="#ffffff" stroke="#0a0a0a" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Elliptical middle element -->
+  <path d="M 20,30 A 19,14 0 0 1 58,30 L 58,40 L 20,40 Z"
+        fill="#ffffff" stroke="#0a0a0a" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Gray belt -->
+  <path d="M 16,46 A 19,6 0 0 1 62,46 L 62,52 L 16,52 Z"
+        fill="#646464" stroke="#0a0a0a" stroke-width="2.5"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Tower body -->
+  <path d="M 22,90 L 12,56 L 12,42 L 66,42 L 66,56 L 56,90 Z"
+        fill="#ffffff" stroke="#0a0a0a" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Gray pennant/arrow on right side -->
+  <path d="M 66,62 L 66,56 L 58,56 L 58,62 L 50,59 Z"
+        fill="#aaaaaa" stroke="#0a0a0a" stroke-width="2.5"
+        stroke-linejoin="round" stroke-linecap="round"
+        transform="rotate(180,63,59) translate(-6,0)"/>
+  <path d="M 58,54 L 58,64 L 76,59 Z"
+        fill="#aaaaaa" stroke="#0a0a0a" stroke-width="2.5"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Left vertical line (shorter) -->
+  <line x1="32" y1="56" x2="32" y2="78"
+        stroke="#000000" stroke-width="4" stroke-linecap="butt"/>
+  <!-- Right vertical line (full) -->
+  <line x1="42" y1="56" x2="42" y2="84"
+        stroke="#000000" stroke-width="4" stroke-linecap="butt"/>
+</svg>
