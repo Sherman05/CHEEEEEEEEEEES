@@ -9,8 +9,8 @@ import { checkScoutCapture } from '../logic/scout';
 // Design colors — matched to screenshot
 const COLORS = {
   lightSquare: '#ffffff',
-  darkSquare: '#b8b8b8',
-  castleSquare: '#dcdcdc',
+  darkSquare: '#808080',
+  castleSquare: '#c0c0c0',
   border: '#1060d0',
   borderOuter: '#0040ee',
   notation: '#ffffff',
@@ -24,7 +24,7 @@ const COLORS = {
 
 function isLightSquare(file: string, rank: number): boolean {
   const fileIdx = FILES.indexOf(file as typeof FILES[number]);
-  return (fileIdx + rank) % 2 !== 0;
+  return (fileIdx + rank) % 2 === 0;
 }
 
 interface DragState {
@@ -203,6 +203,17 @@ const Board: React.FC = () => {
       return;
     }
 
+    // Knekht movement restrictions
+    const targetRank = parseInt(targetSq[1]);
+    if (dragState.piece.type === PieceType.KNEKHT && dragState.piece.color === PieceColor.WHITE && targetRank >= 7) {
+      setDragState(null);
+      return;
+    }
+    if (dragState.piece.type === PieceType.KNEKHT && dragState.piece.color === PieceColor.BLACK && targetRank <= 2) {
+      setDragState(null);
+      return;
+    }
+
     // Normal move (including capture)
     movePiece(dragState.fromSquare, targetSq);
 
@@ -368,6 +379,16 @@ const Board: React.FC = () => {
           boxSizing: 'border-box',
         }}
       >
+        {castle && (
+          <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+            <defs>
+              <pattern id="castleHatch" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(0,0,0,0.18)" strokeWidth="1.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#castleHatch)" />
+          </svg>
+        )}
         {highlight && (
           <div style={{
             position: 'absolute',

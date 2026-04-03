@@ -1,11 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 100">
-  <!-- Prince White: Small triangular head + wide trapezoidal skirt body -->
-  <!-- Small triangular head -->
-  <path d="M 38,10 L 32,30 L 58,30 L 52,10 Z"
+  <!-- Prince White: OVAL top, tower body, 1 long + 1 short line -->
+  <!-- Oval top (navershie) -->
+  <ellipse cx="45" cy="22" rx="18" ry="12"
+        fill="#ffffff" stroke="#0a0a0a" stroke-width="3"/>
+  <!-- Tower body -->
+  <path d="M 22,88 L 14,48 L 14,32 L 76,32 L 76,48 L 68,88 Z"
         fill="#ffffff" stroke="#0a0a0a" stroke-width="3"
         stroke-linejoin="round" stroke-linecap="round"/>
-  <!-- Wide trapezoidal skirt body -->
-  <path d="M 10,92 L 24,32 L 66,32 L 80,92 Z"
-        fill="#ffffff" stroke="#0a0a0a" stroke-width="3"
-        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Left vertical line (long) -->
+  <line x1="40" y1="42" x2="40" y2="82"
+        stroke="#000000" stroke-width="3.5" stroke-linecap="butt"/>
+  <!-- Right vertical line (short) -->
+  <line x1="52" y1="42" x2="52" y2="62"
+        stroke="#000000" stroke-width="3.5" stroke-linecap="butt"/>
 </svg>
