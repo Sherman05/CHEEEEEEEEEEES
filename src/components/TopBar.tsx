@@ -2,25 +2,19 @@ import React from 'react';
 import { useGameStore, getViewMode } from '../stores/gameStore';
 import { createInitialPosition } from '../logic/pieces';
 
-// Metallic 3D circle button style (gradient + highlight + shadow)
-const CIRCLE_BTN_3D: React.CSSProperties = {
-  width: 38,
-  height: 38,
+// Dark metallic 3D circle button (for window controls) — per mockup
+const DARK_CIRCLE: React.CSSProperties = {
+  width: 36,
+  height: 36,
   borderRadius: '50%',
-  border: '1.5px solid #555',
-  background: 'linear-gradient(180deg, #f0f0f0 0%, #d8d8d8 30%, #b0b0b0 70%, #909090 100%)',
+  border: '1.5px solid #333',
+  background: 'linear-gradient(180deg, #808080 0%, #606060 40%, #484848 70%, #383838 100%)',
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   padding: 0,
-  boxShadow: '0 2px 4px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.6)',
-};
-
-const CIRCLE_BTN_FROZEN: React.CSSProperties = {
-  ...CIRCLE_BTN_3D,
-  opacity: 0.4,
-  cursor: 'default',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2)',
 };
 
 interface TopBarProps {
@@ -52,20 +46,27 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: 8,
-      padding: '5px 10px',
-      background: 'linear-gradient(180deg, #e8e8e8 0%, #d0d0d0 20%, #c0c0c0 50%, #b0b0b0 80%, #a0a0a0 100%)',
-      minHeight: 50,
+      gap: 6,
+      padding: '5px 8px',
+      background: 'linear-gradient(180deg, #8ec8f0 0%, #5aace8 30%, #3a96e0 60%, #2a86d0 100%)',
+      minHeight: 48,
       flexShrink: 0,
-      borderBottom: '1px solid #888',
     }}>
-      {/* Начальная расстановка — шахматная доска 2×2 */}
+      {/* Начальная расстановка — square button with 2x2 chess grid icon */}
       <button
         style={{
-          ...(initialPosFrozen ? CIRCLE_BTN_FROZEN : CIRCLE_BTN_3D),
-          borderRadius: 6,
-          width: 38,
-          height: 38,
+          width: 36,
+          height: 36,
+          borderRadius: 4,
+          border: '1.5px solid #333',
+          backgroundColor: initialPosFrozen ? '#aaa' : '#e8e8e8',
+          cursor: initialPosFrozen ? 'default' : 'pointer',
+          opacity: initialPosFrozen ? 0.5 : 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 0,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
         }}
         disabled={initialPosFrozen}
         onClick={() => {
@@ -78,32 +79,29 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         }}
         title="Начальная расстановка"
       >
-        {/* 2x2 chess board icon */}
-        <svg width="20" height="20" viewBox="0 0 20 20">
-          <rect x="1" y="1" width="9" height="9" fill="#333" stroke="#333" strokeWidth="0.5"/>
-          <rect x="10" y="1" width="9" height="9" fill="#fff" stroke="#333" strokeWidth="0.5"/>
-          <rect x="1" y="10" width="9" height="9" fill="#fff" stroke="#333" strokeWidth="0.5"/>
-          <rect x="10" y="10" width="9" height="9" fill="#333" stroke="#333" strokeWidth="0.5"/>
+        <svg width="18" height="18" viewBox="0 0 18 18">
+          <rect x="1" y="1" width="8" height="8" fill="#555" stroke="#333" strokeWidth="0.5"/>
+          <rect x="9" y="1" width="8" height="8" fill="#fff" stroke="#333" strokeWidth="0.5"/>
+          <rect x="1" y="9" width="8" height="8" fill="#fff" stroke="#333" strokeWidth="0.5"/>
+          <rect x="9" y="9" width="8" height="8" fill="#555" stroke="#333" strokeWidth="0.5"/>
         </svg>
       </button>
 
-      <div style={{ width: 1, height: 32, backgroundColor: 'rgba(0,0,0,0.2)' }} />
-
-      {/* Партия — тёмно-синий фон, белый текст */}
+      {/* Партия — blue rectangle button */}
       <button
         style={{
-          height: 34,
-          borderRadius: 4,
-          border: '1px solid #333',
-          backgroundColor: partyFrozen ? '#8090a0' : '#1a3366',
+          height: 32,
+          borderRadius: 3,
+          border: '1px solid #1a5090',
+          backgroundColor: partyFrozen ? '#7ab0d0' : '#3a90d0',
           color: '#ffffff',
           cursor: partyFrozen ? 'default' : 'pointer',
           opacity: partyFrozen ? 0.5 : 1,
-          padding: '0 18px',
-          fontSize: 14,
+          padding: '0 16px',
+          fontSize: 13,
           fontWeight: 'bold',
           fontFamily: 'Arial, sans-serif',
-          boxShadow: isPartyActive ? '0 0 8px rgba(0,40,250,0.5), inset 0 0 6px rgba(0,100,200,0.3)' : '0 1px 3px rgba(0,0,0,0.3)',
+          boxShadow: isPartyActive ? '0 0 6px rgba(0,40,200,0.5)' : '0 1px 2px rgba(0,0,0,0.2)',
         }}
         disabled={partyFrozen}
         onClick={onPartyClick}
@@ -112,21 +110,21 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         Партия
       </button>
 
-      {/* Анализ — голубой фон, белый текст */}
+      {/* Анализ — blue rectangle button */}
       <button
         style={{
-          height: 34,
-          borderRadius: 4,
-          border: '1px solid #333',
-          backgroundColor: analysisFrozen ? '#7ab0d0' : '#4a90d0',
+          height: 32,
+          borderRadius: 3,
+          border: '1px solid #1a5090',
+          backgroundColor: analysisFrozen ? '#7ab0d0' : '#3a90d0',
           color: '#ffffff',
           cursor: analysisFrozen ? 'default' : 'pointer',
           opacity: analysisFrozen ? 0.5 : 1,
-          padding: '0 18px',
-          fontSize: 14,
+          padding: '0 16px',
+          fontSize: 13,
           fontWeight: 'bold',
           fontFamily: 'Arial, sans-serif',
-          boxShadow: isAnalysisActive ? '0 0 8px rgba(0,40,250,0.5), inset 0 0 6px rgba(255,255,255,0.3)' : '0 1px 3px rgba(0,0,0,0.3)',
+          boxShadow: isAnalysisActive ? '0 0 6px rgba(0,40,200,0.5)' : '0 1px 2px rgba(0,0,0,0.2)',
         }}
         disabled={analysisFrozen}
         onClick={onAnalysisClick}
@@ -137,48 +135,50 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
 
       <div style={{ flex: 1 }} />
 
-      {/* Свернуть — metallic 3D circle (—) */}
+      {/* 3 dark metallic circle buttons — per mockup */}
+      {/* Свернуть */}
       <button
-        style={minimizeFrozen ? CIRCLE_BTN_FROZEN : CIRCLE_BTN_3D}
+        style={{
+          ...DARK_CIRCLE,
+          opacity: minimizeFrozen ? 0.4 : 1,
+          cursor: minimizeFrozen ? 'default' : 'pointer',
+        }}
         disabled={minimizeFrozen}
         onClick={onMinimize}
         title="Свернуть"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16">
-          <line x1="4" y1="12" x2="12" y2="12" stroke="#333" strokeWidth="2.5" strokeLinecap="round" />
+        <svg width="14" height="14" viewBox="0 0 14 14">
+          <line x1="3" y1="10" x2="11" y2="10" stroke="#ddd" strokeWidth="2" strokeLinecap="round" />
         </svg>
       </button>
 
-      {/* Поверх всех окон — metallic 3D circle (chess texture) */}
+      {/* Поверх всех окон */}
       <button
         style={{
-          ...CIRCLE_BTN_3D,
+          ...DARK_CIRCLE,
           ...(alwaysOnTop ? {
-            background: 'linear-gradient(180deg, #b0d0f0 0%, #80b0e0 30%, #5090d0 70%, #3070c0 100%)',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.6), 0 0 8px rgba(0,80,200,0.4)',
+            background: 'linear-gradient(180deg, #5090d0 0%, #3070b0 40%, #2060a0 100%)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.3), 0 0 6px rgba(0,80,200,0.4)',
           } : {}),
         }}
         onClick={onAlwaysOnTop}
         title="Поверх всех окон"
       >
-        {/* Chess 2x2 texture icon */}
         <svg width="14" height="14" viewBox="0 0 14 14">
-          <rect x="1" y="1" width="6" height="6" fill="#333" stroke="#333" strokeWidth="0.3"/>
-          <rect x="7" y="1" width="6" height="6" fill="#fff" stroke="#333" strokeWidth="0.3"/>
-          <rect x="1" y="7" width="6" height="6" fill="#fff" stroke="#333" strokeWidth="0.3"/>
-          <rect x="7" y="7" width="6" height="6" fill="#333" stroke="#333" strokeWidth="0.3"/>
+          <rect x="1" y="1" width="6" height="6" fill="#888" stroke="#ccc" strokeWidth="0.8"/>
+          <rect x="5" y="5" width="6" height="6" fill="#bbb" stroke="#ccc" strokeWidth="0.8"/>
         </svg>
       </button>
 
-      {/* Закрыть — metallic 3D circle (×) */}
+      {/* Закрыть */}
       <button
-        style={CIRCLE_BTN_3D}
+        style={DARK_CIRCLE}
         onClick={onClose}
         title="Закрыть"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16">
-          <line x1="4" y1="4" x2="12" y2="12" stroke="#cc2020" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="12" y1="4" x2="4" y2="12" stroke="#cc2020" strokeWidth="2.5" strokeLinecap="round" />
+        <svg width="14" height="14" viewBox="0 0 14 14">
+          <line x1="3" y1="3" x2="11" y2="11" stroke="#ddd" strokeWidth="2.5" strokeLinecap="round" />
+          <line x1="11" y1="3" x2="3" y2="11" stroke="#ddd" strokeWidth="2.5" strokeLinecap="round" />
         </svg>
       </button>
     </div>

@@ -1,12 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 100">
-  <!-- Scout Black: Triangular top, EMPTY inside (0 lines), SMALLEST, trapezoidal body -->
-  <!-- Triangular top (head) -->
-  <path d="M 38,20 L 32,36 L 58,36 L 52,20 Z"
-        fill="#000000" stroke="#411b1a" stroke-width="3"
-        stroke-linejoin="round" stroke-linecap="round"/>
-  <!-- Trapezoidal body (smallest piece) -->
-  <path d="M 26,88 L 20,52 L 20,38 L 70,38 L 70,52 L 64,88 Z"
-        fill="#000000" stroke="#411b1a" stroke-width="3"
-        stroke-linejoin="round" stroke-linecap="round"/>
-  <!-- NO vertical lines — Scout is empty inside -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80">
+  <!-- Рк (Scout/Razvedchik) Black: triangle top, EMPTY, smallest piece -->
+  <path d="M 25,28 L 30,16 L 35,28 Z"
+        fill="#1a1a1a" stroke="#3a2020" stroke-width="2.5"
+        stroke-linejoin="round"/>
+  <path d="M 16,74 L 12,44 L 19,28 L 41,28 L 48,44 L 44,74 Z"
+        fill="#1a1a1a" stroke="#3a2020" stroke-width="2.5"
+        stroke-linejoin="round"/>
 </svg>

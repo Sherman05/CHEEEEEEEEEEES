@@ -6,20 +6,20 @@ import PieceComponent, { getPieceSvg } from './Piece';
 import { checkPromotion } from '../logic/promotion';
 import { checkScoutCapture } from '../logic/scout';
 
-// Design colors — matched to screenshot
+// Design colors — matched to Figma mockup
 const COLORS = {
   lightSquare: '#ffffff',
-  darkSquare: '#808080',
-  castleSquare: '#c0c0c0',
-  border: '#1060d0',
-  borderOuter: '#0040ee',
-  notation: '#ffffff',
+  darkSquare: '#b8b8b8',
+  castleSquare: '#d0d0d0',
+  frame: '#e8d8c0',         // beige/cream frame per mockup
+  boardBorder: '#1a1a1a',   // dark border around the board
+  notation: '#333333',       // dark text on beige frame
   highlightStart: 'rgba(100, 180, 255, 0.45)',
   highlightHover: 'rgba(100, 180, 255, 0.35)',
   highlightLastMove: 'rgba(100, 180, 255, 0.2)',
   highlightSelected: 'rgba(255, 100, 100, 0.35)',
-  cellBorder: 'rgba(0, 0, 0, 0.25)',
-  gridLine: 'rgba(80, 160, 255, 0.3)',
+  cellBorder: 'rgba(0, 0, 0, 0.12)',
+  gridLine: 'rgba(0, 0, 0, 0.08)',
 };
 
 function isLightSquare(file: string, rank: number): boolean {
@@ -428,24 +428,24 @@ const Board: React.FC = () => {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      {/* Outer border */}
+      {/* Outer border — dark frame per mockup */}
       <div style={{
         position: 'absolute',
         inset: 0,
-        border: `${borderSize * 1.5}px solid ${COLORS.borderOuter}`,
-        borderRadius: 3,
+        border: `2px solid ${COLORS.boardBorder}`,
+        borderRadius: 2,
         pointerEvents: 'none',
         zIndex: 5,
       }} />
 
-      {/* Inner area with notation */}
+      {/* Inner area with notation — beige/cream frame */}
       <div style={{
         position: 'absolute',
-        left: borderSize,
-        top: borderSize,
-        right: borderSize,
-        bottom: borderSize,
-        backgroundColor: COLORS.border,
+        left: 2,
+        top: 2,
+        right: 2,
+        bottom: 2,
+        backgroundColor: COLORS.frame,
       }}>
         {/* Left notation (ranks) */}
         <div style={{
@@ -551,13 +551,15 @@ const Board: React.FC = () => {
           ))}
         </div>
 
-        {/* Board squares */}
+        {/* Board squares — with dark border per mockup */}
         <div style={{
           position: 'absolute',
           left: notationSize,
           top: notationSize,
           width: boardSize,
           height: boardSize,
+          border: `2px solid ${COLORS.boardBorder}`,
+          boxSizing: 'content-box',
         }}>
           {ranks.map((rank, rowIdx) =>
             files.map((file, colIdx) =>

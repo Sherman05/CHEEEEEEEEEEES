@@ -72,19 +72,19 @@ const INTRO_TEXT = `Как пользоваться программой ГИ ch
 В chess-T1 запись расположения фигур на доске и ходов аналогична шахматной. В качестве сокращений для фигур применяются следующие обозначения:
 «Пешка» (Кнехт) – Кн/ или без обозначения, «пешка-ветеран» (Вер Кнехт) – ВК/В, Риттер – Рт, Разведчик – Рк, Принц – Пр, Коннет («Ферзь») – Кт, Король – Кр. Начальная расстановка фигур, белые: a1-Рт, b1-Рк, c1-Пр, d1-Кт, e1-Кр, f1-Пр, g1-Рк, h1-Рт, 2-я горизонталь – белые «пешки»; черные: a8-Рт, b8-Рк, c8-Пр, d8-Кт, e8-Кр, f8-Пр, g8-Рк, h8-Рт, 7-я горизонталь – черные «пешки».`;
 
-// Metallic 3D circle button for window controls
+// Dark metallic circle for window controls — per mockup
 const WIN_BTN: React.CSSProperties = {
   width: 30,
   height: 30,
   borderRadius: '50%',
-  border: '1.5px solid #555',
-  background: 'linear-gradient(180deg, #f0f0f0 0%, #d8d8d8 30%, #b0b0b0 70%, #909090 100%)',
+  border: '1.5px solid #333',
+  background: 'linear-gradient(180deg, #808080 0%, #606060 40%, #484848 70%, #383838 100%)',
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   padding: 0,
-  boxShadow: '0 2px 3px rgba(0,0,0,0.3), inset 0 1px 2px rgba(255,255,255,0.5)',
+  boxShadow: '0 2px 3px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.15)',
 };
 
 const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForever, onMinimize, onAlwaysOnTop, onClose }) => {
@@ -94,8 +94,10 @@ const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForeve
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      backgroundColor: '#e8e8e8',
+      backgroundColor: '#e8d8c0',
+      border: '4px solid #c89830',
       overflow: 'hidden',
+      boxSizing: 'border-box',
     }}>
       {/* Top blue bar */}
       <div style={{
@@ -150,21 +152,19 @@ const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForeve
         {/* 3 round buttons: Minimize, AlwaysOnTop, Close */}
         <button onClick={onMinimize} style={WIN_BTN} title="Свернуть">
           <svg width="12" height="12" viewBox="0 0 12 12">
-            <line x1="2" y1="9" x2="10" y2="9" stroke="#333" strokeWidth="2" strokeLinecap="round" />
+            <line x1="2" y1="9" x2="10" y2="9" stroke="#ddd" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </button>
         <button onClick={onAlwaysOnTop} style={WIN_BTN} title="Поверх всех окон">
           <svg width="12" height="12" viewBox="0 0 12 12">
-            <rect x="1" y="1" width="5" height="5" fill="#333" stroke="#333" strokeWidth="0.3"/>
-            <rect x="6" y="1" width="5" height="5" fill="#fff" stroke="#333" strokeWidth="0.3"/>
-            <rect x="1" y="6" width="5" height="5" fill="#fff" stroke="#333" strokeWidth="0.3"/>
-            <rect x="6" y="6" width="5" height="5" fill="#333" stroke="#333" strokeWidth="0.3"/>
+            <rect x="1" y="1" width="5" height="5" fill="#888" stroke="#ccc" strokeWidth="0.5"/>
+            <rect x="5" y="5" width="5" height="5" fill="#bbb" stroke="#ccc" strokeWidth="0.5"/>
           </svg>
         </button>
         <button onClick={onClose} style={WIN_BTN} title="Закрыть">
           <svg width="12" height="12" viewBox="0 0 12 12">
-            <line x1="2" y1="2" x2="10" y2="10" stroke="#cc2020" strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="10" y1="2" x2="2" y2="10" stroke="#cc2020" strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="2" y1="2" x2="10" y2="10" stroke="#ddd" strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="10" y1="2" x2="2" y2="10" stroke="#ddd" strokeWidth="2.5" strokeLinecap="round" />
           </svg>
         </button>
       </div>
