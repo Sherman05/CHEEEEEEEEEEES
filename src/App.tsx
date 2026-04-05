@@ -10,7 +10,7 @@ import FolderDialog from './components/FolderDialog';
 import CloseDialog from './components/CloseDialog';
 import MenuPopup from './components/MenuPopup';
 import IntroPage from './components/IntroPage';
-import { captureScreenshot, downloadBlob } from './utils/screenshot';
+import { captureScreenshot, saveToDisk } from './utils/screenshot';
 import { saveSession, loadSession, clearSession, setIntroSkipped, isIntroSkipped } from './utils/persistence';
 
 async function tauriClose() {
@@ -26,9 +26,13 @@ const App: React.FC = () => {
   const [showFolderDialog, setShowFolderDialog] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showEndPartyDialog, setShowEndPartyDialog] = useState(false);
+  const [showSaveAsDialog, setShowSaveAsDialog] = useState(false);
+  const [saveAsName, setSaveAsName] = useState('');
   const [folderMode, setFolderMode] = useState<'party' | 'analysis'>('party');
   const [saveMessage, setSaveMessage] = useState('');
   const [showIntroPage, setShowIntroPage] = useState(false);
+  const [returnFromIntro, setReturnFromIntro] = useState(false);
 
   const {
     board, currentTurn, moveNumber, gameMode, gameStage, reversed, partyFolder,
@@ -69,7 +73,6 @@ const App: React.FC = () => {
     startAnalysis();
   }, [gameMode, startAnalysis, endSession]);
 
-  // Folder confirm: create folder and start mode
   const handleFolderConfirm = useCallback((folderName: string) => {
     setShowFolderDialog(false);
     if (folderMode === 'party') {
@@ -79,7 +82,7 @@ const App: React.FC = () => {
     }
   }, [folderMode, startParty, startAnalysisPlay]);
 
-  // Folder cancel: proceed WITHOUT folder (screenshots go to Images/Downloads)
+  // Cancel = proceed WITHOUT folder
   const handleFolderCancel = useCallback(() => {
     setShowFolderDialog(false);
     if (folderMode === 'party') {
@@ -94,88 +97,117 @@ const App: React.FC = () => {
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
       await getCurrentWindow().minimize();
     } catch {
-      // dev mode fallback
+      // dev mode
     }
   }, []);
 
+  // Поверх всех окон = setAlwaysOnTop per TZ 6.1
   const handleAlwaysOnTop = useCallback(async () => {
+    const newValue = !useGameStore.getState().alwaysOnTop;
+    toggleAlwaysOnTop();
     try {
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      const win = getCurrentWindow();
-      const maximized = await win.isMaximized();
-      if (maximized) {
-        await win.unmaximize();
-      } else {
-        await win.maximize();
-      }
+      await getCurrentWindow().setAlwaysOnTop(newValue);
     } catch {
-      // dev mode fallback — toggle fullscreen via browser API
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        document.documentElement.requestFullscreen();
-      }
+      // dev mode
     }
-    toggleAlwaysOnTop();
   }, [toggleAlwaysOnTop]);
 
-  // × button in top bar: just close, end session, NO save dialog
-  const handleClose = useCallback(async () => {
-    clearSession();
-    endSession();
-    await tauriClose();
-  }, [endSession]);
-
-  // Menu → Выход: show close dialog if active session
-  const handleExit = useCallback(() => {
+  // × button AND Menu→Выход: show dialog if session active, per TZ 10.2
+  const handleClose = useCallback(() => {
     if (gameMode !== 'none' && gameStage === 'play') {
       setShowCloseDialog(true);
     } else {
       clearSession();
-      endSession();
       tauriClose();
     }
-  }, [gameMode, gameStage, endSession]);
+  }, [gameMode, gameStage]);
 
+  // Close dialog: end party + close
   const handleCloseWithEnd = useCallback(async (save: boolean) => {
     if (save) {
       const blob = await captureScreenshot();
-      if (blob) downloadBlob(blob, `${moveIndicator || 'position'}.png`);
+      if (blob) await saveToDisk(blob, `${moveIndicator || 'position'}.png`, partyFolder);
     }
     clearSession();
     endSession();
     await tauriClose();
-  }, [moveIndicator, endSession]);
+  }, [moveIndicator, partyFolder, endSession]);
 
+  // Close dialog: close WITHOUT ending party → save session for restore
   const handleCloseWithoutEnd = useCallback(async (save: boolean) => {
     if (save) {
       const blob = await captureScreenshot();
-      if (blob) downloadBlob(blob, `${moveIndicator || 'position'}.png`);
+      if (blob) await saveToDisk(blob, `${moveIndicator || 'position'}.png`, partyFolder);
     }
+    // Save session so next launch restores this position (TZ 10.4)
     saveSession(board, currentTurn, moveNumber, gameMode, gameStage, partyFolder, moveIndicator);
     await tauriClose();
   }, [board, currentTurn, moveNumber, gameMode, gameStage, partyFolder, moveIndicator]);
 
+  // Menu → Сохранить позицию
   const handleSavePosition = useCallback(async () => {
     const blob = await captureScreenshot();
     if (blob) {
-      downloadBlob(blob, `${moveIndicator || 'position'}.png`);
+      await saveToDisk(blob, `${moveIndicator || 'position'}.png`, partyFolder);
       setSaveMessage('Текущая позиция сохранена');
       setTimeout(() => setSaveMessage(''), 1500);
     }
+  }, [moveIndicator, partyFolder]);
+
+  // Menu → Сохранить позицию как
+  const handleSavePositionAs = useCallback(() => {
+    setSaveAsName(moveIndicator || 'position');
+    setShowSaveAsDialog(true);
   }, [moveIndicator]);
 
-  const handleEndParty = useCallback(() => {
-    endSession();
-  }, [endSession]);
+  const handleSaveAsConfirm = useCallback(async () => {
+    setShowSaveAsDialog(false);
+    const blob = await captureScreenshot();
+    if (blob) {
+      await saveToDisk(blob, `${saveAsName.trim() || 'position'}.png`, partyFolder);
+      setSaveMessage('Текущая позиция сохранена');
+      setTimeout(() => setSaveMessage(''), 1500);
+    }
+  }, [saveAsName, partyFolder]);
 
-  const handleEnterMain = useCallback(() => setShowIntroPage(false), []);
-  const handleSkipIntro = useCallback(() => setShowIntroPage(false), []);
+  // Menu → Завершить партию: show dialog per TZ 10.1
+  const handleEndPartyMenu = useCallback(() => {
+    setShowEndPartyDialog(true);
+  }, []);
+
+  const handleEndPartyConfirm = useCallback(async (save: boolean) => {
+    setShowEndPartyDialog(false);
+    if (save) {
+      const blob = await captureScreenshot();
+      if (blob) await saveToDisk(blob, `${moveIndicator || 'position'}.png`, partyFolder);
+    }
+    clearSession();
+    endSession();
+  }, [moveIndicator, partyFolder, endSession]);
+
+  // About: open intro, return to current mode after
+  const handleAbout = useCallback(() => {
+    setReturnFromIntro(true);
+    setShowIntroPage(true);
+  }, []);
+
+  const handleEnterMain = useCallback(() => {
+    setShowIntroPage(false);
+    setReturnFromIntro(false);
+  }, []);
+  const handleSkipIntro = useCallback(() => {
+    setShowIntroPage(false);
+    setReturnFromIntro(false);
+  }, []);
   const handleSkipIntroForever = useCallback(() => {
     setShowIntroPage(false);
-    setIntroSkipped(true);
-    storeSetIntroSkipped(true);
-  }, [storeSetIntroSkipped]);
+    setReturnFromIntro(false);
+    if (!returnFromIntro) {
+      setIntroSkipped(true);
+      storeSetIntroSkipped(true);
+    }
+  }, [returnFromIntro, storeSetIntroSkipped]);
 
   const handleReset = useCallback(() => clearBoard(), [clearBoard]);
   const handleOk = useCallback(() => {
@@ -235,7 +267,7 @@ const App: React.FC = () => {
         onClose={handleClose}
       />
 
-      {/* Main content — beige background per mockup */}
+      {/* Main content */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -289,11 +321,11 @@ const App: React.FC = () => {
       {showMenu && (
         <MenuPopup
           onClose={() => setShowMenu(false)}
-          onAbout={() => setShowIntroPage(true)}
+          onAbout={handleAbout}
           onSavePosition={handleSavePosition}
-          onSavePositionAs={handleSavePosition}
-          onEndParty={handleEndParty}
-          onExit={handleExit}
+          onSavePositionAs={handleSavePositionAs}
+          onEndParty={handleEndPartyMenu}
+          onExit={handleClose}
         />
       )}
 
@@ -304,6 +336,7 @@ const App: React.FC = () => {
         />
       )}
 
+      {/* Close dialog — TZ 10.2 */}
       {showCloseDialog && (
         <CloseDialog
           hasActiveSession={gameMode !== 'none' && gameStage === 'play'}
@@ -313,24 +346,93 @@ const App: React.FC = () => {
         />
       )}
 
+      {/* End party dialog — TZ 10.1 */}
+      {showEndPartyDialog && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
+        }}>
+          <div style={{
+            backgroundColor: '#f0f0f0', border: '2px solid #0028fa', borderRadius: 8,
+            padding: 24, minWidth: 350, boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 16, color: '#1a1a1a' }}>Завершить партию</h3>
+              <button onClick={() => setShowEndPartyDialog(false)} style={{
+                background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#666', padding: '0 4px',
+              }}>✕</button>
+            </div>
+            <EndPartyContent onConfirm={handleEndPartyConfirm} onCancel={() => setShowEndPartyDialog(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Save As dialog — TZ 10.1 */}
+      {showSaveAsDialog && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200,
+        }}>
+          <div style={{
+            backgroundColor: '#f0f0f0', border: '2px solid #0028fa', borderRadius: 8,
+            padding: 24, minWidth: 350, boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+          }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: 16, color: '#1a1a1a' }}>Сохранить позицию как</h3>
+            <input
+              type="text"
+              value={saveAsName}
+              onChange={(e) => setSaveAsName(e.target.value)}
+              autoFocus
+              style={{
+                width: '100%', padding: '8px 10px', border: '1px solid #999',
+                borderRadius: 4, fontSize: 14, boxSizing: 'border-box', marginBottom: 16,
+              }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleSaveAsConfirm(); }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button onClick={() => setShowSaveAsDialog(false)} style={{
+                padding: '6px 16px', border: '1px solid #999', borderRadius: 4,
+                backgroundColor: '#e0e0e0', cursor: 'pointer', fontSize: 13,
+              }}>Отмена</button>
+              <button onClick={handleSaveAsConfirm} style={{
+                padding: '6px 16px', border: '1px solid #0028fa', borderRadius: 4,
+                backgroundColor: '#0068c8', color: '#fff', cursor: 'pointer', fontSize: 13,
+              }}>Сохранить</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {saveMessage && (
         <div style={{
-          position: 'fixed',
-          bottom: 80,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          padding: '8px 20px',
-          backgroundColor: 'rgba(0, 100, 200, 0.9)',
-          color: '#fff',
-          borderRadius: 6,
-          fontSize: 14,
-          zIndex: 300,
+          position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
+          padding: '8px 20px', backgroundColor: 'rgba(0, 100, 200, 0.9)',
+          color: '#fff', borderRadius: 6, fontSize: 14, zIndex: 300,
           boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
         }}>
           {saveMessage}
         </div>
       )}
     </div>
+  );
+};
+
+// Sub-component for end party dialog
+const EndPartyContent: React.FC<{ onConfirm: (save: boolean) => void; onCancel: () => void }> = ({ onConfirm }) => {
+  const [save, setSave] = useState(false);
+  return (
+    <>
+      <label style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer' }}>
+        <input type="checkbox" checked={save} onChange={(e) => setSave(e.target.checked)} />
+        Сохранить позицию
+      </label>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <button onClick={() => onConfirm(save)} style={{
+          padding: '6px 16px', border: '1px solid #0028fa', borderRadius: 4,
+          backgroundColor: '#0068c8', color: '#fff', cursor: 'pointer', fontSize: 13,
+        }}>Завершить партию</button>
+      </div>
+    </>
   );
 };
 

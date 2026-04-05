@@ -17,10 +17,11 @@ const MenuPopup: React.FC<MenuPopupProps> = ({ onClose, onAbout, onSavePosition,
   const isSetup = gameStage === 'setup';
 
   const items = [
-    { label: 'О программе', action: onAbout, frozen: false },
+    { label: 'О программе', action: onAbout, frozen: isStart ? false : false },
     { label: 'Сохранить позицию', action: onSavePosition, frozen: isStart || isSetup },
     { label: 'Сохранить позицию как', action: onSavePositionAs, frozen: isStart || isSetup },
     { label: 'Завершить партию', action: onEndParty, frozen: isStart || isSetup },
+    { label: 'Создать ярлык', action: () => {}, frozen: false },
     { label: 'Выход', action: onExit, frozen: false },
   ];
 
