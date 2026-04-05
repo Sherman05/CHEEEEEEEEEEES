@@ -11,7 +11,7 @@ const COLORS = {
   lightSquare: '#ffffff',
   darkSquare: '#b8b8b8',
   castleSquare: '#d0d0d0',
-  frame: '#e8d8c0',         // beige/cream frame per mockup
+  frame: '#D0D0D0',         // light gray frame per spec
   boardBorder: '#1a1a1a',   // dark border around the board
   notation: '#333333',       // dark text on beige frame
   highlightStart: 'rgba(100, 180, 255, 0.45)',

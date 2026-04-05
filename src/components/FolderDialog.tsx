@@ -5,8 +5,33 @@ interface FolderDialogProps {
   onCancel: () => void;
 }
 
+async function createFolder(name: string): Promise<string | null> {
+  try {
+    const { mkdir, exists, BaseDirectory } = await import('@tauri-apps/plugin-fs');
+    const folderPath = name;
+    const folderExists = await exists(folderPath, { baseDir: BaseDirectory.Desktop });
+    if (!folderExists) {
+      await mkdir(folderPath, { baseDir: BaseDirectory.Desktop, recursive: true });
+    }
+    return folderPath;
+  } catch (e) {
+    console.error('Failed to create folder:', e);
+    return null;
+  }
+}
+
 const FolderDialog: React.FC<FolderDialogProps> = ({ onConfirm, onCancel }) => {
   const [folderName, setFolderName] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  const handleCreate = async () => {
+    const name = folderName.trim();
+    if (!name) return;
+    setCreating(true);
+    await createFolder(name);
+    setCreating(false);
+    onConfirm(name);
+  };
 
   return (
     <div style={{
@@ -62,12 +87,12 @@ const FolderDialog: React.FC<FolderDialogProps> = ({ onConfirm, onCancel }) => {
               boxSizing: 'border-box',
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && folderName.trim()) onConfirm(folderName.trim());
+              if (e.key === 'Enter' && folderName.trim()) handleCreate();
             }}
           />
         </div>
         <div style={{ fontSize: 12, color: '#666', marginBottom: 16 }}>
-          Папка будет создана на Рабочем столе
+          Папка будет создана на Рабочем столе. Нажмите «Отмена» чтобы продолжить без папки.
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button
@@ -84,20 +109,20 @@ const FolderDialog: React.FC<FolderDialogProps> = ({ onConfirm, onCancel }) => {
             Отмена
           </button>
           <button
-            onClick={() => folderName.trim() && onConfirm(folderName.trim())}
-            disabled={!folderName.trim()}
+            onClick={handleCreate}
+            disabled={!folderName.trim() || creating}
             style={{
               padding: '6px 16px',
               border: '1px solid #0028fa',
               borderRadius: 4,
               backgroundColor: '#0068c8',
               color: '#fff',
-              cursor: folderName.trim() ? 'pointer' : 'default',
+              cursor: folderName.trim() && !creating ? 'pointer' : 'default',
               fontSize: 13,
-              opacity: folderName.trim() ? 1 : 0.5,
+              opacity: folderName.trim() && !creating ? 1 : 0.5,
             }}
           >
-            Создать
+            {creating ? 'Создаю...' : 'Создать'}
           </button>
         </div>
       </div>

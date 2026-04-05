@@ -99,14 +99,24 @@ const App: React.FC = () => {
   }, []);
 
   const handleAlwaysOnTop = useCallback(async () => {
-    const newValue = !useGameStore.getState().alwaysOnTop;
-    toggleAlwaysOnTop();
     try {
       const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      await getCurrentWindow().setAlwaysOnTop(newValue);
+      const win = getCurrentWindow();
+      const maximized = await win.isMaximized();
+      if (maximized) {
+        await win.unmaximize();
+      } else {
+        await win.maximize();
+      }
     } catch {
-      // dev mode fallback
+      // dev mode fallback — toggle fullscreen via browser API
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        document.documentElement.requestFullscreen();
+      }
     }
+    toggleAlwaysOnTop();
   }, [toggleAlwaysOnTop]);
 
   // × button in top bar: just close, end session, NO save dialog
@@ -202,7 +212,7 @@ const App: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
-      backgroundColor: '#e8d8c0',
+      backgroundColor: '#D0D0D0',
       border: '3px solid #1a3060',
       boxSizing: 'border-box',
     }}>
@@ -233,7 +243,7 @@ const App: React.FC = () => {
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'relative',
-        backgroundColor: '#e8d8c0',
+        backgroundColor: '#D0D0D0',
       }}>
         {isExtended && (
           <PieceTray
