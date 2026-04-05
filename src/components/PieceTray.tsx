@@ -3,6 +3,7 @@ import { PieceType, PieceColor } from '../logic/pieces';
 import type { Piece } from '../logic/pieces';
 import { getPieceSvg, getPieceName } from './Piece';
 
+// Order top→bottom: Кр, Кт, Пр, Рт, Кн, ВК, Рк (rows 8→2)
 const ALL_TYPES = [
   PieceType.KING,
   PieceType.KONNET,

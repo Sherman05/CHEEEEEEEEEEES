@@ -13,6 +13,15 @@ import IntroPage from './components/IntroPage';
 import { captureScreenshot, downloadBlob } from './utils/screenshot';
 import { saveSession, loadSession, clearSession, setIntroSkipped, isIntroSkipped } from './utils/persistence';
 
+async function tauriClose() {
+  try {
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    await getCurrentWindow().close();
+  } catch {
+    window.close();
+  }
+}
+
 const App: React.FC = () => {
   const [showFolderDialog, setShowFolderDialog] = useState(false);
   const [showCloseDialog, setShowCloseDialog] = useState(false);
@@ -60,12 +69,23 @@ const App: React.FC = () => {
     startAnalysis();
   }, [gameMode, startAnalysis, endSession]);
 
+  // Folder confirm: create folder and start mode
   const handleFolderConfirm = useCallback((folderName: string) => {
     setShowFolderDialog(false);
     if (folderMode === 'party') {
       startParty(folderName);
     } else {
       startAnalysisPlay(folderName);
+    }
+  }, [folderMode, startParty, startAnalysisPlay]);
+
+  // Folder cancel: proceed WITHOUT folder (screenshots go to Images/Downloads)
+  const handleFolderCancel = useCallback(() => {
+    setShowFolderDialog(false);
+    if (folderMode === 'party') {
+      startParty(null);
+    } else {
+      startAnalysisPlay(null);
     }
   }, [folderMode, startParty, startAnalysisPlay]);
 
@@ -89,13 +109,23 @@ const App: React.FC = () => {
     }
   }, [toggleAlwaysOnTop]);
 
-  const handleClose = useCallback(() => {
+  // × button in top bar: just close, end session, NO save dialog
+  const handleClose = useCallback(async () => {
+    clearSession();
+    endSession();
+    await tauriClose();
+  }, [endSession]);
+
+  // Menu → Выход: show close dialog if active session
+  const handleExit = useCallback(() => {
     if (gameMode !== 'none' && gameStage === 'play') {
       setShowCloseDialog(true);
     } else {
-      window.close();
+      clearSession();
+      endSession();
+      tauriClose();
     }
-  }, [gameMode, gameStage]);
+  }, [gameMode, gameStage, endSession]);
 
   const handleCloseWithEnd = useCallback(async (save: boolean) => {
     if (save) {
@@ -104,7 +134,7 @@ const App: React.FC = () => {
     }
     clearSession();
     endSession();
-    window.close();
+    await tauriClose();
   }, [moveIndicator, endSession]);
 
   const handleCloseWithoutEnd = useCallback(async (save: boolean) => {
@@ -113,7 +143,7 @@ const App: React.FC = () => {
       if (blob) downloadBlob(blob, `${moveIndicator || 'position'}.png`);
     }
     saveSession(board, currentTurn, moveNumber, gameMode, gameStage, partyFolder, moveIndicator);
-    window.close();
+    await tauriClose();
   }, [board, currentTurn, moveNumber, gameMode, gameStage, partyFolder, moveIndicator]);
 
   const handleSavePosition = useCallback(async () => {
@@ -157,7 +187,7 @@ const App: React.FC = () => {
           onSkipForever={handleSkipIntroForever}
           onMinimize={handleMinimize}
           onAlwaysOnTop={handleAlwaysOnTop}
-          onClose={() => window.close()}
+          onClose={handleClose}
         />
       </div>
     );
@@ -172,7 +202,9 @@ const App: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
-      backgroundColor: '#e8e8e8',
+      backgroundColor: '#e8d8c0',
+      border: '3px solid #1a3060',
+      boxSizing: 'border-box',
     }}>
       {/* Title bar drag area */}
       <div
@@ -193,7 +225,7 @@ const App: React.FC = () => {
         onClose={handleClose}
       />
 
-      {/* Main content */}
+      {/* Main content — beige background per mockup */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -201,6 +233,7 @@ const App: React.FC = () => {
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'relative',
+        backgroundColor: '#e8d8c0',
       }}>
         {isExtended && (
           <PieceTray
@@ -242,7 +275,7 @@ const App: React.FC = () => {
         onFirstMoveToggle={handleFirstMoveToggle}
       />
 
-      {/* Menu popup — rendered at top level to avoid any clipping */}
+      {/* Menu popup */}
       {showMenu && (
         <MenuPopup
           onClose={() => setShowMenu(false)}
@@ -250,35 +283,14 @@ const App: React.FC = () => {
           onSavePosition={handleSavePosition}
           onSavePositionAs={handleSavePosition}
           onEndParty={handleEndParty}
-          onExit={handleClose}
+          onExit={handleExit}
         />
       )}
-
-      {/* Resize handle */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          right: 0,
-          width: 16,
-          height: 16,
-          cursor: 'nwse-resize',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10,
-        }}
-        title="Изменить размер"
-      >
-        <svg width="12" height="12" viewBox="0 0 12 12">
-          <path d="M11 1L1 11M11 5L5 11M11 9L9 11" stroke="#999" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      </div>
 
       {showFolderDialog && (
         <FolderDialog
           onConfirm={handleFolderConfirm}
-          onCancel={() => setShowFolderDialog(false)}
+          onCancel={handleFolderCancel}
         />
       )}
 

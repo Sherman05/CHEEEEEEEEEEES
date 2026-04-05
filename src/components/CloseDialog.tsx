@@ -8,8 +8,8 @@ interface CloseDialogProps {
 }
 
 const CloseDialog: React.FC<CloseDialogProps> = ({ hasActiveSession, onCloseWithEnd, onCloseWithoutEnd, onCancel }) => {
-  const [saveWithEnd, setSaveWithEnd] = useState(true);
-  const [saveWithoutEnd, setSaveWithoutEnd] = useState(true);
+  const [saveWithEnd, setSaveWithEnd] = useState(false);
+  const [saveWithoutEnd, setSaveWithoutEnd] = useState(false);
 
   if (!hasActiveSession) {
     // No active session - just close

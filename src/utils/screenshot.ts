@@ -7,6 +7,9 @@ export async function captureScreenshot(): Promise<Blob | null> {
     const canvas = await html2canvas(boardEl, {
       backgroundColor: null,
       scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
     });
 
     return new Promise((resolve) => {
