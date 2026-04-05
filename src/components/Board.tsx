@@ -11,9 +11,8 @@ const COLORS = {
   lightSquare: '#ffffff',
   darkSquare: '#b8b8b8',
   castleSquare: '#d0d0d0',
-  frame: '#D0D0D0',         // light gray frame per spec
   boardBorder: '#1a1a1a',   // dark border around the board
-  notation: '#333333',       // dark text on beige frame
+  notation: '#333333',       // dark text, no borders
   highlightStart: 'rgba(100, 180, 255, 0.45)',
   highlightHover: 'rgba(100, 180, 255, 0.35)',
   highlightLastMove: 'rgba(100, 180, 255, 0.2)',
@@ -64,8 +63,7 @@ const Board: React.FC = () => {
   }, []);
 
   const notationSize = containerSize * 0.04;
-  const borderSize = containerSize * 0.025; // thicker blue border per screenshot
-  const boardSize = containerSize - (notationSize + borderSize) * 2;
+  const boardSize = containerSize - notationSize * 2;
   const cellSize = boardSize / 8;
 
   const getFiles = useCallback(() => reversed ? [...FILES].reverse() : [...FILES], [reversed]);
@@ -74,7 +72,7 @@ const Board: React.FC = () => {
   const getSquareFromPos = useCallback((clientX: number, clientY: number): Square | null => {
     if (!boardRef.current) return null;
     const rect = boardRef.current.getBoundingClientRect();
-    const offset = notationSize + borderSize;
+    const offset = notationSize;
     const x = clientX - rect.left - offset;
     const y = clientY - rect.top - offset;
     if (x < 0 || y < 0 || x >= boardSize || y >= boardSize) return null;
@@ -86,7 +84,7 @@ const Board: React.FC = () => {
     if (col < 0 || col > 7 || row < 0 || row > 7) return null;
 
     return toSquare(files[col], ranks[row]);
-  }, [boardSize, cellSize, notationSize, borderSize, getFiles, getRanks]);
+  }, [boardSize, cellSize, notationSize, getFiles, getRanks]);
 
   const canMove = gameMode !== 'none' && gameStage === 'play' && !promotionPending;
 
@@ -428,145 +426,125 @@ const Board: React.FC = () => {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      {/* Outer border — dark frame per mockup */}
+      {/* Left notation (ranks) — plain text, no borders */}
       <div style={{
         position: 'absolute',
-        inset: 0,
-        border: `2px solid ${COLORS.boardBorder}`,
-        borderRadius: 2,
-        pointerEvents: 'none',
-        zIndex: 5,
-      }} />
-
-      {/* Inner area with notation — beige/cream frame */}
-      <div style={{
-        position: 'absolute',
-        left: 2,
-        top: 2,
-        right: 2,
-        bottom: 2,
-        backgroundColor: COLORS.frame,
+        left: 0,
+        top: notationSize,
+        width: notationSize,
+        height: boardSize,
+        display: 'flex',
+        flexDirection: 'column',
       }}>
-        {/* Left notation (ranks) */}
-        <div style={{
-          position: 'absolute',
-          left: 0,
-          top: notationSize,
-          width: notationSize,
-          height: boardSize,
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
-          {ranks.map((rank) => (
-            <div key={rank} style={{
-              height: cellSize,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: COLORS.notation,
-              fontSize: cellSize * 0.28,
-              fontFamily: 'Arial, sans-serif',
-              fontWeight: 'bold',
-            }}>
-              {rank}
-            </div>
-          ))}
-        </div>
+        {ranks.map((rank) => (
+          <div key={rank} style={{
+            height: cellSize,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: COLORS.notation,
+            fontSize: cellSize * 0.28,
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+          }}>
+            {rank}
+          </div>
+        ))}
+      </div>
 
-        {/* Right notation (ranks) */}
-        <div style={{
-          position: 'absolute',
-          right: 0,
-          top: notationSize,
-          width: notationSize,
-          height: boardSize,
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
-          {ranks.map((rank) => (
-            <div key={rank} style={{
-              height: cellSize,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: COLORS.notation,
-              fontSize: cellSize * 0.28,
-              fontFamily: 'Arial, sans-serif',
-              fontWeight: 'bold',
-            }}>
-              {rank}
-            </div>
-          ))}
-        </div>
+      {/* Right notation (ranks) — flush against board */}
+      <div style={{
+        position: 'absolute',
+        left: notationSize + boardSize,
+        top: notationSize,
+        width: notationSize,
+        height: boardSize,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {ranks.map((rank) => (
+          <div key={rank} style={{
+            height: cellSize,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: COLORS.notation,
+            fontSize: cellSize * 0.28,
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+          }}>
+            {rank}
+          </div>
+        ))}
+      </div>
 
-        {/* Top notation (files) */}
-        <div style={{
-          position: 'absolute',
-          left: notationSize,
-          top: 0,
-          width: boardSize,
-          height: notationSize,
-          display: 'flex',
-          flexDirection: 'row',
-        }}>
-          {files.map((file) => (
-            <div key={file} style={{
-              width: cellSize,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: COLORS.notation,
-              fontSize: cellSize * 0.28,
-              fontFamily: 'Arial, sans-serif',
-              fontWeight: 'bold',
-            }}>
-              {file}
-            </div>
-          ))}
-        </div>
+      {/* Top notation (files) — plain text */}
+      <div style={{
+        position: 'absolute',
+        left: notationSize,
+        top: 0,
+        width: boardSize,
+        height: notationSize,
+        display: 'flex',
+        flexDirection: 'row',
+      }}>
+        {files.map((file) => (
+          <div key={file} style={{
+            width: cellSize,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: COLORS.notation,
+            fontSize: cellSize * 0.28,
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+          }}>
+            {file}
+          </div>
+        ))}
+      </div>
 
-        {/* Bottom notation (files) */}
-        <div style={{
-          position: 'absolute',
-          left: notationSize,
-          bottom: 0,
-          width: boardSize,
-          height: notationSize,
-          display: 'flex',
-          flexDirection: 'row',
-        }}>
-          {files.map((file) => (
-            <div key={file} style={{
-              width: cellSize,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: COLORS.notation,
-              fontSize: cellSize * 0.28,
-              fontFamily: 'Arial, sans-serif',
-              fontWeight: 'bold',
-            }}>
-              {file}
-            </div>
-          ))}
-        </div>
+      {/* Bottom notation (files) — flush against board */}
+      <div style={{
+        position: 'absolute',
+        left: notationSize,
+        top: notationSize + boardSize,
+        width: boardSize,
+        height: notationSize,
+        display: 'flex',
+        flexDirection: 'row',
+      }}>
+        {files.map((file) => (
+          <div key={file} style={{
+            width: cellSize,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: COLORS.notation,
+            fontSize: cellSize * 0.28,
+            fontFamily: 'Arial, sans-serif',
+            fontWeight: 'bold',
+          }}>
+            {file}
+          </div>
+        ))}
+      </div>
 
-        {/* Board squares — with dark border per mockup */}
-        <div style={{
-          position: 'absolute',
-          left: notationSize,
-          top: notationSize,
-          width: boardSize,
-          height: boardSize,
-          border: `2px solid ${COLORS.boardBorder}`,
-          boxSizing: 'content-box',
-        }}>
-          {ranks.map((rank, rowIdx) =>
-            files.map((file, colIdx) =>
-              renderSquare(file, rank, colIdx, rowIdx)
-            )
-          )}
-        </div>
+      {/* Board squares — dark border around the board */}
+      <div style={{
+        position: 'absolute',
+        left: notationSize,
+        top: notationSize,
+        width: boardSize,
+        height: boardSize,
+        border: `2px solid ${COLORS.boardBorder}`,
+        boxSizing: 'content-box',
+      }}>
+        {ranks.map((rank, rowIdx) =>
+          files.map((file, colIdx) =>
+            renderSquare(file, rank, colIdx, rowIdx)
+          )
+        )}
       </div>
 
       {/* Drag ghost */}

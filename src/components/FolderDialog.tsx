@@ -7,13 +7,9 @@ interface FolderDialogProps {
 
 async function createFolder(name: string): Promise<string | null> {
   try {
-    const { mkdir, exists, BaseDirectory } = await import('@tauri-apps/plugin-fs');
-    const folderPath = name;
-    const folderExists = await exists(folderPath, { baseDir: BaseDirectory.Desktop });
-    if (!folderExists) {
-      await mkdir(folderPath, { baseDir: BaseDirectory.Desktop, recursive: true });
-    }
-    return folderPath;
+    const { invoke } = await import('@tauri-apps/api/core');
+    const path = await invoke<string>('create_folder_on_desktop', { name });
+    return path;
   } catch (e) {
     console.error('Failed to create folder:', e);
     return null;
@@ -23,14 +19,20 @@ async function createFolder(name: string): Promise<string | null> {
 const FolderDialog: React.FC<FolderDialogProps> = ({ onConfirm, onCancel }) => {
   const [folderName, setFolderName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [error, setError] = useState('');
 
   const handleCreate = async () => {
     const name = folderName.trim();
     if (!name) return;
     setCreating(true);
-    await createFolder(name);
+    setError('');
+    const result = await createFolder(name);
     setCreating(false);
-    onConfirm(name);
+    if (result) {
+      onConfirm(name);
+    } else {
+      setError('Не удалось создать папку. Проверьте имя.');
+    }
   };
 
   return (
@@ -91,6 +93,9 @@ const FolderDialog: React.FC<FolderDialogProps> = ({ onConfirm, onCancel }) => {
             }}
           />
         </div>
+        {error && (
+          <div style={{ fontSize: 12, color: '#cc0000', marginBottom: 8 }}>{error}</div>
+        )}
         <div style={{ fontSize: 12, color: '#666', marginBottom: 16 }}>
           Папка будет создана на Рабочем столе. Нажмите «Отмена» чтобы продолжить без папки.
         </div>
