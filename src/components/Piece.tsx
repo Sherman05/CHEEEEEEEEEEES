@@ -2,23 +2,23 @@ import React from 'react';
 import { PieceType, PieceColor } from '../logic/pieces';
 import type { Piece as PieceData } from '../logic/pieces';
 
-// Import all piece SVGs
-import kingWhite from '../assets/pieces/king_white.svg';
-import kingBlack from '../assets/pieces/king_black.svg';
-import konnetWhite from '../assets/pieces/konnet_white.svg';
-import konnetBlack from '../assets/pieces/konnet_black.svg';
-import princeWhite from '../assets/pieces/prince_white.svg';
-import princeBlack from '../assets/pieces/prince_black.svg';
-import ritterWhite from '../assets/pieces/ritter_white.svg';
-import ritterBlack from '../assets/pieces/ritter_black.svg';
-import knekhtWhite from '../assets/pieces/knekht_white.svg';
-import knekhtBlack from '../assets/pieces/knekht_black.svg';
-import verKnekhtWhite from '../assets/pieces/ver_knekht_white.svg';
-import verKnekhtBlack from '../assets/pieces/ver_knekht_black.svg';
-import scoutWhite from '../assets/pieces/scout_white.svg';
-import scoutBlack from '../assets/pieces/scout_black.svg';
+// Import all piece PNGs from Figma design
+import kingWhite from '../assets/pieces/king_white.png';
+import kingBlack from '../assets/pieces/king_black.png';
+import konnetWhite from '../assets/pieces/konnet_white.png';
+import konnetBlack from '../assets/pieces/konnet_black.png';
+import princeWhite from '../assets/pieces/prince_white.png';
+import princeBlack from '../assets/pieces/prince_black.png';
+import ritterWhite from '../assets/pieces/ritter_white.png';
+import ritterBlack from '../assets/pieces/ritter_black.png';
+import knekhtWhite from '../assets/pieces/knekht_white.png';
+import knekhtBlack from '../assets/pieces/knekht_black.png';
+import verKnekhtWhite from '../assets/pieces/ver_knekht_white.png';
+import verKnekhtBlack from '../assets/pieces/ver_knekht_black.png';
+import scoutWhite from '../assets/pieces/scout_white.png';
+import scoutBlack from '../assets/pieces/scout_black.png';
 
-const PIECE_SVGS: Record<string, string> = {
+const PIECE_IMGS: Record<string, string> = {
   [`${PieceType.KING}_${PieceColor.WHITE}`]: kingWhite,
   [`${PieceType.KING}_${PieceColor.BLACK}`]: kingBlack,
   [`${PieceType.KONNET}_${PieceColor.WHITE}`]: konnetWhite,
@@ -36,7 +36,7 @@ const PIECE_SVGS: Record<string, string> = {
 };
 
 export function getPieceSvg(piece: PieceData): string {
-  return PIECE_SVGS[`${piece.type}_${piece.color}`] || '';
+  return PIECE_IMGS[`${piece.type}_${piece.color}`] || '';
 }
 
 const PIECE_NAMES: Record<PieceType, string> = {
@@ -62,11 +62,11 @@ interface PieceProps {
 
 const PieceComponent: React.FC<PieceProps> = ({ piece, cellSize, scale = 0.9, isDragging = false }) => {
   const iconSize = cellSize * scale;
-  const svg = getPieceSvg(piece);
+  const src = getPieceSvg(piece);
 
   return (
     <img
-      src={svg}
+      src={src}
       alt={getPieceName(piece.type)}
       style={{
         width: iconSize,
@@ -80,6 +80,7 @@ const PieceComponent: React.FC<PieceProps> = ({ piece, cellSize, scale = 0.9, is
         bottom: cellSize * 0.02,
         left: '50%',
         transform: 'translateX(-50%)',
+        objectFit: 'contain',
       }}
       draggable={false}
     />
