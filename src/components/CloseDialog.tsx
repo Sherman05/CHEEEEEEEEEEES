@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface CloseDialogProps {
   hasActiveSession: boolean;
@@ -11,33 +11,48 @@ const CloseDialog: React.FC<CloseDialogProps> = ({ hasActiveSession, onCloseWith
   const [saveWithEnd, setSaveWithEnd] = useState(false);
   const [saveWithoutEnd, setSaveWithoutEnd] = useState(false);
 
-  if (!hasActiveSession) {
-    // No active session - just close
-    onCloseWithEnd(false);
-    return null;
-  }
+  // Auto-close if no active session
+  useEffect(() => {
+    if (!hasActiveSession) {
+      onCloseWithEnd(false);
+    }
+  }, [hasActiveSession, onCloseWithEnd]);
+
+  if (!hasActiveSession) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      backgroundColor: 'rgba(0,0,0,0.4)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 200,
-    }}>
-      <div style={{
-        backgroundColor: '#f0f0f0',
-        border: '2px solid #0028fa',
-        borderRadius: 8,
-        padding: 24,
-        minWidth: 380,
-        boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-      }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+        pointerEvents: 'auto',
+      }}
+      onClick={(e) => {
+        // Click on backdrop closes
+        if (e.target === e.currentTarget) onCancel();
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#f0f0f0',
+          border: '2px solid #0028fa',
+          borderRadius: 8,
+          padding: 24,
+          minWidth: 380,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+          pointerEvents: 'auto',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h3 style={{ margin: 0, fontSize: 16, color: '#1a1a1a' }}>Закрытие программы</h3>
           <button
+            type="button"
             onClick={onCancel}
             style={{
               background: 'none',
@@ -46,6 +61,7 @@ const CloseDialog: React.FC<CloseDialogProps> = ({ hasActiveSession, onCloseWith
               cursor: 'pointer',
               color: '#666',
               padding: '0 4px',
+              pointerEvents: 'auto',
             }}
             title="Отмена"
           >
@@ -53,26 +69,31 @@ const CloseDialog: React.FC<CloseDialogProps> = ({ hasActiveSession, onCloseWith
           </button>
         </div>
 
-        <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Option 1: End party and close */}
           <div style={{
-            padding: '10px 12px',
+            padding: '12px',
             border: '1px solid #ccc',
             borderRadius: 6,
             backgroundColor: '#fff',
           }}>
             <button
+              type="button"
               onClick={() => onCloseWithEnd(saveWithEnd)}
               style={{
                 display: 'block',
                 width: '100%',
-                padding: '6px 0',
-                border: 'none',
-                backgroundColor: 'transparent',
+                padding: '8px 12px',
+                border: '1px solid #0028fa',
+                borderRadius: 4,
+                backgroundColor: '#e8f0ff',
                 cursor: 'pointer',
                 fontSize: 13,
                 textAlign: 'left',
                 color: '#1a1a1a',
                 fontWeight: 'bold',
+                marginBottom: 8,
+                pointerEvents: 'auto',
               }}
             >
               Завершить партию и закрыть программу
@@ -87,25 +108,30 @@ const CloseDialog: React.FC<CloseDialogProps> = ({ hasActiveSession, onCloseWith
             </label>
           </div>
 
+          {/* Option 2: Close without ending */}
           <div style={{
-            padding: '10px 12px',
+            padding: '12px',
             border: '1px solid #ccc',
             borderRadius: 6,
             backgroundColor: '#fff',
           }}>
             <button
+              type="button"
               onClick={() => onCloseWithoutEnd(saveWithoutEnd)}
               style={{
                 display: 'block',
                 width: '100%',
-                padding: '6px 0',
-                border: 'none',
-                backgroundColor: 'transparent',
+                padding: '8px 12px',
+                border: '1px solid #0028fa',
+                borderRadius: 4,
+                backgroundColor: '#e8f0ff',
                 cursor: 'pointer',
                 fontSize: 13,
                 textAlign: 'left',
                 color: '#1a1a1a',
                 fontWeight: 'bold',
+                marginBottom: 8,
+                pointerEvents: 'auto',
               }}
             >
               Закрыть программу — не завершая партию
