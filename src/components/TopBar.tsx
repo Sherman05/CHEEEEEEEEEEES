@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameStore, getViewMode } from '../stores/gameStore';
 import { createInitialPosition } from '../logic/pieces';
+import btnReset from '../assets/btn-reset.png';
 import btnMinimize from '../assets/btn-minimize.png';
 import btnOntop from '../assets/btn-ontop.png';
 import btnClose from '../assets/btn-close.png';
@@ -57,16 +58,12 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         position: 'relative',
       }}
     >
-      {/* Начальная расстановка */}
+      {/* Начальная расстановка — PNG icon */}
       <button
         style={{
-          width: 36, height: 36, borderRadius: 4,
-          border: '1.5px solid #333',
-          backgroundColor: initialPosFrozen ? '#aaa' : '#e8e8e8',
+          ...IMG_BTN,
+          opacity: initialPosFrozen ? 0.4 : 1,
           cursor: initialPosFrozen ? 'default' : 'pointer',
-          opacity: initialPosFrozen ? 0.5 : 1,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: 0, boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
         }}
         disabled={initialPosFrozen}
         onClick={() => {
@@ -75,12 +72,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         }}
         title="Начальная расстановка"
       >
-        <svg width="18" height="18" viewBox="0 0 18 18">
-          <rect x="1" y="1" width="8" height="8" fill="#555" stroke="#333" strokeWidth="0.5"/>
-          <rect x="9" y="1" width="8" height="8" fill="#fff" stroke="#333" strokeWidth="0.5"/>
-          <rect x="1" y="9" width="8" height="8" fill="#fff" stroke="#333" strokeWidth="0.5"/>
-          <rect x="9" y="9" width="8" height="8" fill="#555" stroke="#333" strokeWidth="0.5"/>
-        </svg>
+        <img src={btnReset} alt="Начальная расстановка" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
       </button>
 
       {/* Партия */}
