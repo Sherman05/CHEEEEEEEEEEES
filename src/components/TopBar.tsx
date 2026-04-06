@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameStore, getViewMode } from '../stores/gameStore';
 import { createInitialPosition } from '../logic/pieces';
+// App icon is used in IntroPage, not in TopBar directly
 
 // Dark metallic circle button (Свернуть, Поверх)
 const DARK_CIRCLE: React.CSSProperties = {

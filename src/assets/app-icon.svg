@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Blue rounded square background -->
+  <rect x="2" y="2" width="60" height="60" rx="8" ry="8"
+        fill="#2a8ad0" stroke="#1a6ab0" stroke-width="2"/>
+  <!-- Chess board pattern overlay (subtle) -->
+  <rect x="10" y="10" width="11" height="11" fill="rgba(255,255,255,0.15)"/>
+  <rect x="32" y="10" width="11" height="11" fill="rgba(255,255,255,0.15)"/>
+  <rect x="21" y="21" width="11" height="11" fill="rgba(255,255,255,0.15)"/>
+  <rect x="43" y="21" width="11" height="11" fill="rgba(255,255,255,0.15)"/>
+  <rect x="10" y="32" width="11" height="11" fill="rgba(255,255,255,0.15)"/>
+  <rect x="32" y="32" width="11" height="11" fill="rgba(255,255,255,0.15)"/>
+  <rect x="21" y="43" width="11" height="11" fill="rgba(255,255,255,0.15)"/>
+  <rect x="43" y="43" width="11" height="11" fill="rgba(255,255,255,0.15)"/>
+  <!-- Stylized chess piece (knight-like silhouette) -->
+  <path d="M 22,48 L 22,24 L 26,20 L 26,16 L 30,14 L 30,20 L 34,20 L 34,14 L 38,16 L 38,20 L 42,24 L 42,48 Z"
+        fill="#ffffff" stroke="#1a4a80" stroke-width="1.5"
+        stroke-linejoin="round"/>
+  <!-- Two vertical lines inside the piece -->
+  <line x1="29" y1="26" x2="29" y2="44" stroke="#1a6ab0" stroke-width="2.5" stroke-linecap="butt"/>
+  <line x1="35" y1="26" x2="35" y2="44" stroke="#1a6ab0" stroke-width="2.5" stroke-linecap="butt"/>
+</svg>

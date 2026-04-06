@@ -1,4 +1,5 @@
 import React from 'react';
+import appIcon from '../assets/app-icon.svg';
 
 interface IntroPageProps {
   onEnterMain: () => void;
@@ -109,24 +110,8 @@ const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForeve
         minHeight: 44,
         flexShrink: 0,
       }}>
-        {/* Program symbol (decorative dashed frame) */}
-        <div style={{
-          width: 32,
-          height: 32,
-          borderRadius: 3,
-          border: '2px dashed rgba(255,255,255,0.6)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}>
-          <svg width="18" height="18" viewBox="0 0 18 18">
-            <rect x="1" y="1" width="8" height="8" fill="#fff" stroke="#555" strokeWidth="0.5"/>
-            <rect x="9" y="1" width="8" height="8" fill="#888" stroke="#555" strokeWidth="0.5"/>
-            <rect x="1" y="9" width="8" height="8" fill="#888" stroke="#555" strokeWidth="0.5"/>
-            <rect x="9" y="9" width="8" height="8" fill="#fff" stroke="#555" strokeWidth="0.5"/>
-          </svg>
-        </div>
+        {/* Program symbol — GI chess-T1 icon */}
+        <img src={appIcon} alt="GI chess-T1" style={{ width: 34, height: 34, flexShrink: 0 }} />
 
         {/* "Основной режим" button — blue rectangle, white text */}
         <button
