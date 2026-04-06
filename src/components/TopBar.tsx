@@ -5,9 +5,11 @@ import btnMinimize from '../assets/btn-minimize.png';
 import btnOntop from '../assets/btn-ontop.png';
 import btnClose from '../assets/btn-close.png';
 
+const BTN_SIZE = 38;
+
 const IMG_BTN: React.CSSProperties = {
-  width: 40,
-  height: 40,
+  width: BTN_SIZE,
+  height: BTN_SIZE,
   cursor: 'pointer',
   padding: 0,
   border: 'none',
@@ -115,7 +117,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         style={{ ...IMG_BTN, opacity: minimizeFrozen ? 0.4 : 1, cursor: minimizeFrozen ? 'default' : 'pointer' }}
         disabled={minimizeFrozen} onClick={onMinimize} title="Свернуть"
       >
-        <img src={btnMinimize} alt="Свернуть" style={{ width: 36, height: 36 }} draggable={false} />
+        <img src={btnMinimize} alt="Свернуть" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
       </button>
 
       {/* Поверх всех окон — PNG icon */}
@@ -123,12 +125,12 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         style={{ ...IMG_BTN, ...(alwaysOnTop ? { filter: 'brightness(1.3)' } : {}) }}
         onClick={onAlwaysOnTop} title="Поверх всех окон"
       >
-        <img src={btnOntop} alt="Поверх всех окон" style={{ width: 36, height: 36 }} draggable={false} />
+        <img src={btnOntop} alt="Поверх всех окон" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
       </button>
 
       {/* Закрыть — PNG icon */}
       <button style={IMG_BTN} onClick={onClose} title="Закрыть">
-        <img src={btnClose} alt="Закрыть" style={{ width: 36, height: 36 }} draggable={false} />
+        <img src={btnClose} alt="Закрыть" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
       </button>
     </div>
   );

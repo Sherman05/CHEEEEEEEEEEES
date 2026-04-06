@@ -6,9 +6,11 @@ import btnOk from '../assets/btn-ok.png';
 import btnDelete from '../assets/btn-delete.png';
 import btnReset from '../assets/btn-reset.png';
 
+const BTN_SIZE = 36;
+
 const IMG_BTN: React.CSSProperties = {
-  width: 36,
-  height: 36,
+  width: BTN_SIZE,
+  height: BTN_SIZE,
   cursor: 'pointer',
   padding: 0,
   border: 'none',
@@ -84,13 +86,13 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
       {/* Ok — PNG icon (extended/analysis mode) */}
       {isExtended && (
         <button style={IMG_BTN} onClick={onOkClick} title="Готово">
-          <img src={btnOk} alt="Ok" style={{ width: 40, height: 40 }} draggable={false} />
+          <img src={btnOk} alt="Ok" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
         </button>
       )}
 
       {/* Меню — PNG icon */}
       <button style={IMG_BTN} onClick={onMenuClick} title="Меню">
-        <img src={btnMenu} alt="Меню" style={{ width: 36, height: 36 }} draggable={false} />
+        <img src={btnMenu} alt="Меню" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
       </button>
 
       {/* Move Indicator */}
@@ -101,7 +103,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
         <>
           {/* Сброс — PNG icon */}
           <button style={IMG_BTN} onClick={onResetClick} title="Сброс">
-            <img src={btnReset} alt="Сброс" style={{ width: 36, height: 36 }} draggable={false} />
+            <img src={btnReset} alt="Сброс" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
           </button>
 
           <button
@@ -165,7 +167,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
         style={deleteFrozen ? IMG_FROZEN : IMG_BTN}
         disabled={deleteFrozen} onClick={deleteSelectedPiece} title="Удалить фигуру"
       >
-        <img src={btnDelete} alt="Удалить" style={{ width: 36, height: 36 }} draggable={false} />
+        <img src={btnDelete} alt="Удалить" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
       </button>
 
       {/* Перевернуть доску */}
