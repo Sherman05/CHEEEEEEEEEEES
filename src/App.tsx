@@ -248,11 +248,11 @@ const App: React.FC = () => {
       border: '3px solid #1a3060',
       boxSizing: 'border-box',
     }}>
-      {/* Title bar drag area */}
+      {/* Title bar drag area — visible blue strip */}
       <div
         data-tauri-drag-region
         style={{
-          height: 4,
+          height: 8,
           backgroundColor: '#3a8ad0',
           cursor: 'move',
           flexShrink: 0,

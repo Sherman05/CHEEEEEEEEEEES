@@ -60,7 +60,6 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
 
   return (
     <div
-      data-tauri-drag-region
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -69,7 +68,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         background: 'linear-gradient(180deg, #8ec8f0 0%, #5aace8 30%, #3a96e0 60%, #2a86d0 100%)',
         minHeight: 48,
         flexShrink: 0,
-        cursor: 'move',
+        position: 'relative',
       }}
     >
       {/* Начальная расстановка — chess 2x2 grid */}
@@ -141,7 +140,8 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         Анализ
       </button>
 
-      <div style={{ flex: 1 }} />
+      {/* Drag region — fills space between buttons */}
+      <div data-tauri-drag-region style={{ flex: 1, height: '100%', cursor: 'move', minHeight: 40 }} />
 
       {/* Свернуть — dark circle, horizontal bar inside (per icon mockup) */}
       <button
