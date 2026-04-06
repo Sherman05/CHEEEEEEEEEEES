@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
+use tauri::Manager;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -67,6 +68,16 @@ pub fn run() {
             get_pictures_dir,
             save_screenshot
         ])
+        .setup(|app| {
+            // Set window icon from bundled icon
+            if let Some(window) = app.get_webview_window("main") {
+                let icon_bytes = include_bytes!("../icons/icon.png");
+                if let Ok(icon) = tauri::image::Image::from_bytes(icon_bytes) {
+                    let _ = window.set_icon(Some(icon));
+                }
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
