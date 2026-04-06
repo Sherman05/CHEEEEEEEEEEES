@@ -1,8 +1,30 @@
 import React from 'react';
 import { useGameStore, getViewMode } from '../stores/gameStore';
 import MoveIndicator from './MoveIndicator';
+import btnMenu from '../assets/btn-menu.png';
+import btnOk from '../assets/btn-ok.png';
+import btnDelete from '../assets/btn-delete.png';
+import btnReset from '../assets/btn-reset.png';
 
-// Small gray metallic circle button — per mockup
+const IMG_BTN: React.CSSProperties = {
+  width: 36,
+  height: 36,
+  cursor: 'pointer',
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+
+const IMG_FROZEN: React.CSSProperties = {
+  ...IMG_BTN,
+  opacity: 0.4,
+  cursor: 'default',
+};
+
+// Small gray circle for prev/next/reverse (no PNG provided)
 const SMALL_CIRCLE: React.CSSProperties = {
   width: 32,
   height: 32,
@@ -21,13 +43,6 @@ const SMALL_FROZEN: React.CSSProperties = {
   ...SMALL_CIRCLE,
   opacity: 0.4,
   cursor: 'default',
-};
-
-// White circle button style (for Menu, Ok)
-const WHITE_CIRCLE: React.CSSProperties = {
-  ...SMALL_CIRCLE,
-  background: 'linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 40%, #d0d0d0 100%)',
-  border: '1.5px solid #666',
 };
 
 interface BottomBarProps {
@@ -66,58 +81,34 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
       flexShrink: 0,
       borderTop: '1px solid #999',
     }}>
-      {/* Ok — gray metallic circle with blue "Ok" text (per icon mockup) */}
+      {/* Ok — PNG icon (extended/analysis mode) */}
       {isExtended && (
-        <button
-          style={{
-            ...SMALL_CIRCLE,
-            width: 40,
-            height: 40,
-            border: '2px solid #555',
-          }}
-          onClick={onOkClick}
-          title="Готово"
-        >
-          <span style={{ fontSize: 16, fontWeight: 'bold', color: '#2a7ac0', fontFamily: 'serif' }}>Ok</span>
+        <button style={IMG_BTN} onClick={onOkClick} title="Готово">
+          <img src={btnOk} alt="Ok" style={{ width: 40, height: 40 }} draggable={false} />
         </button>
       )}
 
-      {/* Menu — white circle with blue lines (☰) */}
-      <button
-        style={WHITE_CIRCLE}
-        onClick={onMenuClick}
-        title="Меню"
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16">
-          <line x1="3" y1="4" x2="13" y2="4" stroke="#0050d0" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="3" y1="8" x2="13" y2="8" stroke="#0050d0" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="3" y1="12" x2="13" y2="12" stroke="#0050d0" strokeWidth="2.5" strokeLinecap="round" />
-        </svg>
+      {/* Меню — PNG icon */}
+      <button style={IMG_BTN} onClick={onMenuClick} title="Меню">
+        <img src={btnMenu} alt="Меню" style={{ width: 36, height: 36 }} draggable={false} />
       </button>
 
-      {/* Move Indicator — visible in basic (play) mode */}
+      {/* Move Indicator */}
       {viewMode === 'basic' && <MoveIndicator />}
 
-      {/* Extended view extras: Reset + 1st move toggle */}
+      {/* Extended: Сброс + 1-й ход */}
       {isExtended && (
         <>
-          <button style={SMALL_CIRCLE} onClick={onResetClick} title="Сброс">
-            <svg width="14" height="14" viewBox="0 0 14 14">
-              <path d="M3 7a4 4 0 1 1 1 2.6" fill="none" stroke="#ddd" strokeWidth="1.8" strokeLinecap="round" />
-              <path d="M3 4.5v2.5h2.5" fill="none" stroke="#ddd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          {/* Сброс — PNG icon */}
+          <button style={IMG_BTN} onClick={onResetClick} title="Сброс">
+            <img src={btnReset} alt="Сброс" style={{ width: 36, height: 36 }} draggable={false} />
           </button>
 
           <button
             style={{
               ...SMALL_CIRCLE,
-              width: 'auto',
-              borderRadius: 10,
-              padding: '3px 8px',
-              flexDirection: 'column',
-              gap: 1,
-              height: 'auto',
-              minHeight: 36,
+              width: 'auto', borderRadius: 10, padding: '3px 8px',
+              flexDirection: 'column', gap: 1, height: 'auto', minHeight: 36,
             }}
             onClick={onFirstMoveToggle}
             title="1-й ход"
@@ -126,9 +117,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
             <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <div style={{
                 width: 20, height: 8, borderRadius: 1,
-                backgroundColor: '#ffffff',
-                border: '1px solid #666',
-                position: 'relative',
+                backgroundColor: '#ffffff', border: '1px solid #666', position: 'relative',
               }}>
                 {currentTurn === 'white' && <div style={{
                   width: 4, height: 4, borderRadius: '50%', backgroundColor: '#555',
@@ -137,9 +126,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
               </div>
               <div style={{
                 width: 20, height: 8, borderRadius: 1,
-                backgroundColor: '#1a1a1a',
-                border: '1px solid #666',
-                position: 'relative',
+                backgroundColor: '#1a1a1a', border: '1px solid #666', position: 'relative',
               }}>
                 {currentTurn === 'black' && <div style={{
                   width: 4, height: 4, borderRadius: '50%', backgroundColor: '#ccc',
@@ -153,55 +140,38 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
 
       <div style={{ flex: 1 }} />
 
-      {/* Prev move (‹) — gray circle */}
+      {/* Предыдущий ход */}
       <button
         style={prevFrozen ? SMALL_FROZEN : SMALL_CIRCLE}
-        disabled={prevFrozen}
-        onClick={prevMove}
-        title="Предыдущий ход"
+        disabled={prevFrozen} onClick={prevMove} title="Предыдущий ход"
       >
         <svg width="14" height="14" viewBox="0 0 14 14">
           <path d="M9 2L4 7l5 5" fill="none" stroke="#ddd" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
-      {/* Next move (›) — gray circle */}
+      {/* Следующий ход */}
       <button
         style={nextFrozen ? SMALL_FROZEN : SMALL_CIRCLE}
-        disabled={nextFrozen}
-        onClick={nextMove}
-        title="Следующий ход"
+        disabled={nextFrozen} onClick={nextMove} title="Следующий ход"
       >
         <svg width="14" height="14" viewBox="0 0 14 14">
           <path d="M5 2l5 5-5 5" fill="none" stroke="#ddd" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 
-      {/* Delete piece — blue border circle, blue X on white bg (per icon mockup) */}
+      {/* Удалить фигуру — PNG icon */}
       <button
-        style={{
-          ...(deleteFrozen ? SMALL_FROZEN : {
-            ...SMALL_CIRCLE,
-            background: '#fff',
-            border: '2px solid #2a7ac0',
-          }),
-        }}
-        disabled={deleteFrozen}
-        onClick={deleteSelectedPiece}
-        title="Удалить фигуру"
+        style={deleteFrozen ? IMG_FROZEN : IMG_BTN}
+        disabled={deleteFrozen} onClick={deleteSelectedPiece} title="Удалить фигуру"
       >
-        <svg width="14" height="14" viewBox="0 0 14 14">
-          <line x1="3" y1="3" x2="11" y2="11" stroke="#2a7ac0" strokeWidth="3" strokeLinecap="round" />
-          <line x1="11" y1="3" x2="3" y2="11" stroke="#2a7ac0" strokeWidth="3" strokeLinecap="round" />
-        </svg>
+        <img src={btnDelete} alt="Удалить" style={{ width: 36, height: 36 }} draggable={false} />
       </button>
 
-      {/* Reverse — gray circle */}
+      {/* Перевернуть доску */}
       <button
         style={reverseFrozen ? SMALL_FROZEN : SMALL_CIRCLE}
-        disabled={reverseFrozen}
-        onClick={toggleReverse}
-        title="Перевернуть доску"
+        disabled={reverseFrozen} onClick={toggleReverse} title="Перевернуть доску"
       >
         <svg width="14" height="14" viewBox="0 0 14 14">
           <path d="M3 5l4-3 4 3" fill="none" stroke="#ddd" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -209,19 +179,13 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
         </svg>
       </button>
 
-      {/* Resize — blue square per mockup */}
+      {/* Изменить размер */}
       <div
         style={{
-          width: 28,
-          height: 28,
-          backgroundColor: '#2a7ac0',
-          border: '1px solid #1a5090',
-          borderRadius: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'nwse-resize',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          width: 28, height: 28, backgroundColor: '#2a7ac0',
+          border: '1px solid #1a5090', borderRadius: 2,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'nwse-resize', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
         }}
         title="Изменить размер"
       >

@@ -1,36 +1,20 @@
 import React from 'react';
 import { useGameStore, getViewMode } from '../stores/gameStore';
 import { createInitialPosition } from '../logic/pieces';
-// App icon is used in IntroPage, not in TopBar directly
+import btnMinimize from '../assets/btn-minimize.png';
+import btnOntop from '../assets/btn-ontop.png';
+import btnClose from '../assets/btn-close.png';
 
-// Dark metallic circle button (Свернуть, Поверх)
-const DARK_CIRCLE: React.CSSProperties = {
-  width: 36,
-  height: 36,
-  borderRadius: '50%',
-  border: '2px solid #333',
-  background: 'linear-gradient(180deg, #909090 0%, #606060 40%, #484848 100%)',
+const IMG_BTN: React.CSSProperties = {
+  width: 40,
+  height: 40,
   cursor: 'pointer',
+  padding: 0,
+  border: 'none',
+  background: 'none',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: 0,
-  boxShadow: '0 2px 4px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.15)',
-};
-
-// Blue circle button (Закрыть)
-const BLUE_CIRCLE: React.CSSProperties = {
-  width: 36,
-  height: 36,
-  borderRadius: '50%',
-  border: '2px solid #1a4080',
-  background: 'linear-gradient(180deg, #4a9ae0 0%, #2a7ac0 40%, #1a6ab0 100%)',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 0,
-  boxShadow: '0 2px 4px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.2)',
 };
 
 interface TopBarProps {
@@ -71,30 +55,21 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         position: 'relative',
       }}
     >
-      {/* Начальная расстановка — chess 2x2 grid */}
+      {/* Начальная расстановка */}
       <button
         style={{
-          width: 36,
-          height: 36,
-          borderRadius: 4,
+          width: 36, height: 36, borderRadius: 4,
           border: '1.5px solid #333',
           backgroundColor: initialPosFrozen ? '#aaa' : '#e8e8e8',
           cursor: initialPosFrozen ? 'default' : 'pointer',
           opacity: initialPosFrozen ? 0.5 : 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 0,
-          boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 0, boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
         }}
         disabled={initialPosFrozen}
         onClick={() => {
           if (initialPosFrozen) return;
-          if (isSetup) {
-            setBoard(createInitialPosition());
-          } else {
-            setInitialPosition();
-          }
+          if (isSetup) { setBoard(createInitialPosition()); } else { setInitialPosition(); }
         }}
         title="Начальная расстановка"
       >
@@ -116,12 +91,8 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
           fontSize: 13, fontWeight: 'bold', fontFamily: 'Arial, sans-serif',
           boxShadow: isPartyActive ? '0 0 6px rgba(0,40,200,0.5)' : '0 1px 2px rgba(0,0,0,0.2)',
         }}
-        disabled={partyFrozen}
-        onClick={onPartyClick}
-        title="Партия"
-      >
-        Партия
-      </button>
+        disabled={partyFrozen} onClick={onPartyClick} title="Партия"
+      >Партия</button>
 
       {/* Анализ */}
       <button
@@ -133,58 +104,31 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
           fontSize: 13, fontWeight: 'bold', fontFamily: 'Arial, sans-serif',
           boxShadow: isAnalysisActive ? '0 0 6px rgba(0,40,200,0.5)' : '0 1px 2px rgba(0,0,0,0.2)',
         }}
-        disabled={analysisFrozen}
-        onClick={onAnalysisClick}
-        title="Анализ"
-      >
-        Анализ
-      </button>
+        disabled={analysisFrozen} onClick={onAnalysisClick} title="Анализ"
+      >Анализ</button>
 
-      {/* Drag region — fills space between buttons */}
+      {/* Drag region */}
       <div data-tauri-drag-region style={{ flex: 1, height: '100%', cursor: 'move', minHeight: 40 }} />
 
-      {/* Свернуть — dark circle, horizontal bar inside (per icon mockup) */}
+      {/* Свернуть — PNG icon */}
       <button
-        style={{ ...DARK_CIRCLE, opacity: minimizeFrozen ? 0.4 : 1, cursor: minimizeFrozen ? 'default' : 'pointer' }}
-        disabled={minimizeFrozen}
-        onClick={onMinimize}
-        title="Свернуть"
+        style={{ ...IMG_BTN, opacity: minimizeFrozen ? 0.4 : 1, cursor: minimizeFrozen ? 'default' : 'pointer' }}
+        disabled={minimizeFrozen} onClick={onMinimize} title="Свернуть"
       >
-        <svg width="20" height="20" viewBox="0 0 20 20">
-          <rect x="4" y="12" width="12" height="3" rx="1" fill="#2a7ac0" />
-        </svg>
+        <img src={btnMinimize} alt="Свернуть" style={{ width: 36, height: 36 }} draggable={false} />
       </button>
 
-      {/* Поверх всех окон — dark circle, chess grid inside (per icon mockup) */}
+      {/* Поверх всех окон — PNG icon */}
       <button
-        style={{
-          ...DARK_CIRCLE,
-          ...(alwaysOnTop ? {
-            background: 'linear-gradient(180deg, #5090d0 0%, #3070b0 40%, #2060a0 100%)',
-            border: '2px solid #1a4080',
-          } : {}),
-        }}
-        onClick={onAlwaysOnTop}
-        title="Поверх всех окон"
+        style={{ ...IMG_BTN, ...(alwaysOnTop ? { filter: 'brightness(1.3)' } : {}) }}
+        onClick={onAlwaysOnTop} title="Поверх всех окон"
       >
-        <svg width="18" height="18" viewBox="0 0 18 18">
-          <rect x="1" y="1" width="8" height="8" fill="#ddd" stroke="#888" strokeWidth="0.5"/>
-          <rect x="9" y="1" width="8" height="8" fill="#666" stroke="#888" strokeWidth="0.5"/>
-          <rect x="1" y="9" width="8" height="8" fill="#666" stroke="#888" strokeWidth="0.5"/>
-          <rect x="9" y="9" width="8" height="8" fill="#ddd" stroke="#888" strokeWidth="0.5"/>
-        </svg>
+        <img src={btnOntop} alt="Поверх всех окон" style={{ width: 36, height: 36 }} draggable={false} />
       </button>
 
-      {/* Закрыть — BLUE circle with white X (per icon mockup) */}
-      <button
-        style={BLUE_CIRCLE}
-        onClick={onClose}
-        title="Закрыть"
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16">
-          <line x1="4" y1="4" x2="12" y2="12" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
-          <line x1="12" y1="4" x2="4" y2="12" stroke="#fff" strokeWidth="3" strokeLinecap="round" />
-        </svg>
+      {/* Закрыть — PNG icon */}
+      <button style={IMG_BTN} onClick={onClose} title="Закрыть">
+        <img src={btnClose} alt="Закрыть" style={{ width: 36, height: 36 }} draggable={false} />
       </button>
     </div>
   );
