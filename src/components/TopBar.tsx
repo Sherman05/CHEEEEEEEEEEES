@@ -5,7 +5,7 @@ import btnMinimize from '../assets/btn-minimize.png';
 import btnOntop from '../assets/btn-ontop.png';
 import btnClose from '../assets/btn-close.png';
 
-const BTN_SIZE = 38;
+const BTN_SIZE = 36;
 
 const IMG_BTN: React.CSSProperties = {
   width: BTN_SIZE,
