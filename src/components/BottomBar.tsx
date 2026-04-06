@@ -4,7 +4,7 @@ import MoveIndicator from './MoveIndicator';
 import btnMenu from '../assets/btn-menu.png';
 import btnOk from '../assets/btn-ok.png';
 import btnDelete from '../assets/btn-delete.png';
-import btnReset from '../assets/btn-reset.png';
+
 
 const BTN_SIZE = 36;
 
@@ -54,7 +54,7 @@ interface BottomBarProps {
   onFirstMoveToggle?: () => void;
 }
 
-const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkClick, onFirstMoveToggle }) => {
+const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onOkClick, onFirstMoveToggle }) => {
   const { gameMode, gameStage, currentTurn, historyIndex, history } = useGameStore();
   const prevMove = useGameStore((s) => s.prevMove);
   const nextMove = useGameStore((s) => s.nextMove);
@@ -98,15 +98,9 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
       {/* Move Indicator */}
       {viewMode === 'basic' && <MoveIndicator />}
 
-      {/* Extended: Сброс + 1-й ход */}
+      {/* Extended: 1-й ход */}
       {isExtended && (
-        <>
-          {/* Сброс — PNG icon */}
-          <button style={IMG_BTN} onClick={onResetClick} title="Сброс">
-            <img src={btnReset} alt="Сброс" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
-          </button>
-
-          <button
+        <>          <button
             style={{
               ...SMALL_CIRCLE,
               width: 'auto', borderRadius: 10, padding: '3px 8px',
