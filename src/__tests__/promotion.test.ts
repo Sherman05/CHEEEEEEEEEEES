@@ -119,6 +119,66 @@ describe('promotion.ts', () => {
     });
   });
 
+  describe('VK edge promotion must NOT include King', () => {
+    it('white VK on h8 options are Konnet/Prince/Ritter/Scout, NOT King', () => {
+      const result = checkPromotion(
+        { type: PieceType.VER_KNEKHT, color: PieceColor.WHITE },
+        'h8'
+      );
+      expect(result?.options).toHaveLength(4);
+      const types = result!.options!.map(o => o.type);
+      expect(types).not.toContain(PieceType.KING);
+      expect(types).toContain(PieceType.KONNET);
+    });
+
+    it('black VK on a1 options are Konnet/Prince/Ritter/Scout, NOT King', () => {
+      const result = checkPromotion(
+        { type: PieceType.VER_KNEKHT, color: PieceColor.BLACK },
+        'a1'
+      );
+      expect(result?.options).toHaveLength(4);
+      const types = result!.options!.map(o => o.type);
+      expect(types).not.toContain(PieceType.KING);
+      expect(types).toContain(PieceType.KONNET);
+    });
+  });
+
+  describe('Knekht cannot reach promotion rows directly', () => {
+    it('white Knekht on rank 7 does NOT trigger promotion (blocked by move logic)', () => {
+      // Knekht should never reach rank 7 due to Board.tsx blocking
+      // But if somehow it did, promotion.ts returns null (no rule for Knekht on 7)
+      const result = checkPromotion(
+        { type: PieceType.KNEKHT, color: PieceColor.WHITE },
+        'a7'
+      );
+      expect(result).toBeNull();
+    });
+
+    it('white Knekht on rank 8 does NOT trigger promotion', () => {
+      const result = checkPromotion(
+        { type: PieceType.KNEKHT, color: PieceColor.WHITE },
+        'a8'
+      );
+      expect(result).toBeNull();
+    });
+
+    it('black Knekht on rank 2 does NOT trigger promotion', () => {
+      const result = checkPromotion(
+        { type: PieceType.KNEKHT, color: PieceColor.BLACK },
+        'h2'
+      );
+      expect(result).toBeNull();
+    });
+
+    it('black Knekht on rank 1 does NOT trigger promotion', () => {
+      const result = checkPromotion(
+        { type: PieceType.KNEKHT, color: PieceColor.BLACK },
+        'h1'
+      );
+      expect(result).toBeNull();
+    });
+  });
+
   describe('non-promoting pieces', () => {
     it('King never promotes', () => {
       expect(checkPromotion({ type: PieceType.KING, color: PieceColor.WHITE }, 'e8')).toBeNull();

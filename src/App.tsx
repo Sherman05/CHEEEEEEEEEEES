@@ -244,7 +244,7 @@ const App: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
-      backgroundColor: '#D0D0D0',
+      backgroundColor: '#ffffff',
       border: '3px solid #1a3060',
       boxSizing: 'border-box',
     }}>
@@ -275,7 +275,7 @@ const App: React.FC = () => {
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'relative',
-        backgroundColor: '#D0D0D0',
+        backgroundColor: '#ffffff',
       }}>
         {isExtended && (
           <PieceTray
