@@ -531,7 +531,7 @@ const Board: React.FC = () => {
       </div>
 
       {/* Board squares — dark border around the board */}
-      <div style={{
+      <div data-board-squares style={{
         position: 'absolute',
         left: notationSize,
         top: notationSize,
