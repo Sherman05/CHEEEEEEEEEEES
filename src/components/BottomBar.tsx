@@ -23,13 +23,6 @@ const SMALL_FROZEN: React.CSSProperties = {
   cursor: 'default',
 };
 
-// Blue circle button style
-const BLUE_CIRCLE: React.CSSProperties = {
-  ...SMALL_CIRCLE,
-  background: 'linear-gradient(180deg, #4a9ae0 0%, #2a7ac0 40%, #1a6ab0 100%)',
-  border: '1.5px solid #1a4080',
-};
-
 // White circle button style (for Menu, Ok)
 const WHITE_CIRCLE: React.CSSProperties = {
   ...SMALL_CIRCLE,
@@ -73,18 +66,19 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
       flexShrink: 0,
       borderTop: '1px solid #999',
     }}>
-      {/* Large blue circle — Ok (visible in extended/analysis mode) */}
+      {/* Ok — gray metallic circle with blue "Ok" text (per icon mockup) */}
       {isExtended && (
         <button
           style={{
-            ...BLUE_CIRCLE,
-            width: 44,
-            height: 44,
+            ...SMALL_CIRCLE,
+            width: 40,
+            height: 40,
+            border: '2px solid #555',
           }}
           onClick={onOkClick}
           title="Готово"
         >
-          <span style={{ fontSize: 15, fontWeight: 'bold', color: '#fff', fontFamily: 'serif' }}>Ok</span>
+          <span style={{ fontSize: 16, fontWeight: 'bold', color: '#2a7ac0', fontFamily: 'serif' }}>Ok</span>
         </button>
       )}
 
@@ -183,18 +177,22 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
         </svg>
       </button>
 
-      {/* Delete piece — BLUE circle with white ✕ per mockup */}
+      {/* Delete piece — blue border circle, blue X on white bg (per icon mockup) */}
       <button
         style={{
-          ...(deleteFrozen ? SMALL_FROZEN : BLUE_CIRCLE),
+          ...(deleteFrozen ? SMALL_FROZEN : {
+            ...SMALL_CIRCLE,
+            background: '#fff',
+            border: '2px solid #2a7ac0',
+          }),
         }}
         disabled={deleteFrozen}
         onClick={deleteSelectedPiece}
         title="Удалить фигуру"
       >
         <svg width="14" height="14" viewBox="0 0 14 14">
-          <line x1="3" y1="3" x2="11" y2="11" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
-          <line x1="11" y1="3" x2="3" y2="11" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+          <line x1="3" y1="3" x2="11" y2="11" stroke="#2a7ac0" strokeWidth="3" strokeLinecap="round" />
+          <line x1="11" y1="3" x2="3" y2="11" stroke="#2a7ac0" strokeWidth="3" strokeLinecap="round" />
         </svg>
       </button>
 
