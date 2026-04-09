@@ -43,11 +43,15 @@ export const IconMenu: React.FC<IconProps> = ({ size = 32, style }) => (
 // Delete-piece button — blue rounded rectangle with a black X.
 // Per design/icons/Символ Удалить фигуру.svg (customer 08.04.2026).
 export const IconDelete: React.FC<IconProps> = ({ size = 32, style }) => (
-  <svg width={size} height={size} viewBox="0 0 100 100" style={style}>
+  <svg width={size} height={size} viewBox="0 0 100 100" style={style} shapeRendering="geometricPrecision">
     <rect x="22" y="14" width="56" height="72" rx="10" ry="10"
-      fill="#009bff" stroke="#000000" strokeWidth="4" />
-    <path d="M33 30 L67 70 M67 30 L33 70"
-      stroke="#000000" strokeWidth="7" strokeLinecap="round" fill="none" />
+      fill="#5BADE0" stroke="#000000" strokeWidth="4" />
+    {/* X drawn as filled rotated rectangles — renders as solid pure black at small sizes,
+        unlike stroked lines which get softened by anti-aliasing. */}
+    <g fill="#000000" stroke="none">
+      <rect x="46" y="20" width="8" height="60" transform="rotate(45 50 50)" />
+      <rect x="46" y="20" width="8" height="60" transform="rotate(-45 50 50)" />
+    </g>
   </svg>
 );
 
