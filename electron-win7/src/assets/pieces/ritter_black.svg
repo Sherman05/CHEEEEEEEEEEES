@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80">
+  <!-- Рт (Ritter) Black: triangle top + 2 parallel long lines -->
+  <path d="M 23,22 L 30,8 L 37,22 Z"
+        fill="#1a1a1a" stroke="#3a2020" stroke-width="2.5"
+        stroke-linejoin="round"/>
+  <path d="M 13,74 L 8,40 L 16,22 L 44,22 L 52,40 L 47,74 Z"
+        fill="#1a1a1a" stroke="#3a2020" stroke-width="2.5"
+        stroke-linejoin="round"/>
+  <line x1="26" y1="30" x2="26" y2="67" stroke="#f0f0f0" stroke-width="3" stroke-linecap="butt"/>
+  <line x1="34" y1="30" x2="34" y2="67" stroke="#f0f0f0" stroke-width="3" stroke-linecap="butt"/>
+</svg>

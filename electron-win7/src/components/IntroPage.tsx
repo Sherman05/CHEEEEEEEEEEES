@@ -1,0 +1,272 @@
+import React from 'react';
+
+
+interface IntroPageProps {
+  onEnterMain: () => void;
+  onSkip: () => void;
+  onSkipForever: () => void;
+  onMinimize: () => void;
+  onAlwaysOnTop: () => void;
+  onClose: () => void;
+}
+
+const INTRO_TEXT = `Как пользоваться программой ГИ chess-T1
+(вводный текст)
+
+Вводная информация – рекомендуется прочитать перед первым использованием.
+
+Настоящая программа GIchess-T1 представляет собой графический интерфейс тактико-стратегической игры chess-T1, частично похожей на шахматы. Она предоставляет пользователю возможность помощью компьютера играть в chess-T1 с соперником, а также анализировать позиции и просматривать партии. Игра с компьютером (ИИ – искусственным интеллектом) не предусмотрена.
+
+Для игры с соперником необходимо, чтобы у каждого из игроков на компьютере была установлена программа, или же игроки используют один и тот же компьютер с программой. Когда игроки пользуются разными компьютерами, они должны самостоятельно вести запись ходов и направлять свои ходы (можно со скриншотами позиций со сделанным ходом) сопернику с помощью мессенджеров или электронной почты. Таким образом воспроизводится классический (но более продвинутый) формат игры «по переписке», широко применявшийся в шахматах в прежние годы.
+
+Применение программы предполагает, что пользователь знаком с правилами игры chess-T1. С правилами игры можно ознакомиться с помощью литературы, имеющейся в свободном (бесплатном) доступе в интернете (ключевые слова для поиска: «игра chess-T1»).
+
+Важный момент, программа не задает (не обозначает) правильные ходы и не ограничивает неправильные ходы фигурами – правильность ходов фигурами должны соблюдать сами игроки, в том числе и поэтому при игре важна самостоятельная запись ходов.
+
+Конечно, для любителей шахмат с виду «неполноценный» интерфейс программы выглядит архаикой по сравнению многочисленными шахматными программами. Пояснение на этот счет следующее. Настоящая программа, как графический интерфейс, реализована на таком уровне в первую очередь по причине, что правила игры chess-T1 по сравнению с шахматами заметно более сложные. Поэтому было более целесообразно выполнить программу в более простом исполнении, учитывая, что это первая такая программа. Тем не менее программа предоставляет пользователю определенный набор удобных функций для игры и анализа.
+
+Основные элементы управления интерфейса программы
+
+Верхний ряд кнопок:
+• Начальная расстановка — устанавливает фигуры в начальное положение
+• Партия — запускает сеанс игры
+• Анализ — позволяет расставить на доске нужную позицию, и далее кнопкой Ok происходит переход в режим анализа данной позиции с возможностью ходов фигурами
+• Свернуть — сворачивает окно
+• Поверх всех окон — удерживает окно поверх других
+• Закрыть — закрывает программу
+
+Нижний ряд кнопок:
+• Меню — открывает список команд
+• Предыдущий ход / Следующий ход — навигация по истории
+• Удалить фигуру — удаляет выбранную фигуру с доски при расстановке фигур в режиме Анализ
+• Перевернуть доску — поворот доски на 180°
+• Изменить размер — изменение размера окна
+
+Индикация номера и очереди хода:
+В интерфейсе программы есть строка индикации номера и очередности хода. Скриншоты позиций сохраняются с именем текста строки индикации, либо пользователь сохраняет, используя другой вариант.
+
+Режим "Партия":
+Нажмите кнопку "Партия" для начала новой партии. Будет предложено создать папку для сохранения скриншотов позиций. Белые ходят первыми.
+
+Режим "Анализ":
+Нажмите кнопку "Анализ" для расстановки произвольной позиции. Используйте кассы фигур слева и справа от доски. После расстановки нажмите "Ок" для начала сеанса анализа позиции. Будет предложено создать папку для сохранения скриншотов позиций при анализе исходной позиции.
+
+Сохранение скриншотов позиций:
+Посредством команд Меню можно сохранять скриншоты позиций либо в созданную пользователем папку (программа предложит), либо скриншоты будут сохраняться в стандартную папку Изображений.
+
+Перемещение фигур:
+Нажмите и удерживайте левую кнопку мыши на фигуре, перетащите на нужную клетку и отпустите. Фигура автоматически встанет в центр клетки.
+
+Взятие фигур:
+Переместить фигуру на клетку, занятую фигурой противника; взятие фигуры противника происходит автоматически. Игрокам необходимо самим, помимо правила хода фигурой, соблюдать также условие для взятия фигуры противника (наличие перевеса в силе, см. правила игры). В программе автоматически реализован особый ход-взятие с разменом Разведчика, когда он бьет фигуру противника в замке.
+
+Превращение фигур:
+Белая «пешка» (Кнехт), вступившая на клетку на 6-й горизонтали, автоматически превращается в «пешку-ветеран» (Вер Кнехт). Аналогично черная «пешка», вступившая на клетку на 3-й горизонтали, автоматически превращается в «пешку-ветеран».
+
+Когда белая «пешка-ветеран» вступает на клетки a8, b8, g8, h8 пользователю (игроку) предлагается на выбор четыре старшие фигуры для превращения «пешки-ветерана». Аналогично происходит, когда черная «пешка-ветеран» вступает на клетки a1, b1, g1, h1.
+
+Когда белая «пешка-ветеран» вступает на клетки замка черных c8, d8, e8, f8 пользователю (игроку) предлагается на выбор две старшие королевские фигуры для превращения «пешки-ветерана». Аналогично происходит, когда черная «пешка-ветеран» вступает на клетки белых c1, d1, e1, f1.
+
+Когда белый Принц вступает на клетки замка черных c8, d8, e8, f8 пользователю (игроку) предлагается на выбор две королевские фигуры: Коннет («Ферзь) и Принц для превращения, или отказа от превращения (выбирая Принца), в соответствии правилом. Аналогично происходит, когда черный Принц вступает на клетки замка белых c1, d1, e1, f1.
+
+Нотация (самостоятельно):
+В chess-T1 запись расположения фигур на доске и ходов аналогична шахматной. В качестве сокращений для фигур применяются следующие обозначения:
+«Пешка» (Кнехт) – Кн/ или без обозначения, «пешка-ветеран» (Вер Кнехт) – ВК/В, Риттер – Рт, Разведчик – Рк, Принц – Пр, Коннет («Ферзь») – Кт, Король – Кр. Начальная расстановка фигур, белые: a1-Рт, b1-Рк, c1-Пр, d1-Кт, e1-Кр, f1-Пр, g1-Рк, h1-Рт, 2-я горизонталь – белые «пешки»; черные: a8-Рт, b8-Рк, c8-Пр, d8-Кт, e8-Кр, f8-Пр, g8-Рк, h8-Рт, 7-я горизонталь – черные «пешки».`;
+
+// Dark metallic circle for window controls — per mockup
+const WIN_BTN: React.CSSProperties = {
+  width: 30,
+  height: 30,
+  borderRadius: '50%',
+  border: '1.5px solid #333',
+  background: 'linear-gradient(180deg, #808080 0%, #606060 40%, #484848 70%, #383838 100%)',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 0,
+  boxShadow: '0 2px 3px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.15)',
+};
+
+const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForever, onMinimize, onAlwaysOnTop, onClose }) => {
+  return (
+    <div style={{
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      backgroundColor: '#e8d8c0',
+      overflow: 'hidden',
+      boxSizing: 'border-box',
+    }}>
+      {/* Top blue bar — draggable window region (data-tauri-drag-region) */}
+      <div
+        data-tauri-drag-region
+        style={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '6px 10px',
+          gap: 8,
+          background: 'linear-gradient(180deg, #7ec0ee 0%, #4a9ae0 50%, #3a8ad0 100%)',
+          minHeight: 44,
+          flexShrink: 0,
+          cursor: 'move',
+        }}
+      >
+        {/* Centered title — sits on top of the drag region, ignores pointer events */}
+        <div style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'none',
+          color: '#ffffff',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: 16,
+          fontWeight: 'bold',
+          textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+          letterSpacing: 0.3,
+        }}>
+          GI chess-T1
+        </div>
+        {/* Program symbol — decorative */}
+        <div data-tauri-drag-region style={{
+          width: 32, height: 32, borderRadius: 3,
+          border: '2px dashed rgba(255,255,255,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+        }}>
+          <svg width="18" height="18" viewBox="0 0 18 18">
+            <rect x="1" y="1" width="8" height="8" fill="#fff" stroke="#555" strokeWidth="0.5"/>
+            <rect x="9" y="1" width="8" height="8" fill="#888" stroke="#555" strokeWidth="0.5"/>
+            <rect x="1" y="9" width="8" height="8" fill="#888" stroke="#555" strokeWidth="0.5"/>
+            <rect x="9" y="9" width="8" height="8" fill="#fff" stroke="#555" strokeWidth="0.5"/>
+          </svg>
+        </div>
+
+        {/* "Основной режим" button — blue rectangle, white text */}
+        <button
+          onClick={onEnterMain}
+          style={{
+            padding: '5px 18px',
+            backgroundColor: '#2060b0',
+            color: '#ffffff',
+            border: '1px solid #1a4080',
+            borderRadius: 4,
+            fontSize: 13,
+            fontWeight: 'bold',
+            fontFamily: 'Arial, sans-serif',
+            cursor: 'pointer',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+          }}
+        >
+          Основной режим
+        </button>
+
+        <div data-tauri-drag-region style={{ flex: 1, alignSelf: 'stretch', cursor: 'move' }} />
+
+        {/* 3 round buttons: Minimize, AlwaysOnTop, Close */}
+        <button onClick={onMinimize} style={WIN_BTN} title="Свернуть">
+          <svg width="12" height="12" viewBox="0 0 12 12">
+            <line x1="2" y1="9" x2="10" y2="9" stroke="#ddd" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
+        <button onClick={onAlwaysOnTop} style={WIN_BTN} title="Поверх всех окон">
+          <svg width="12" height="12" viewBox="0 0 12 12">
+            <rect x="1" y="1" width="5" height="5" fill="#888" stroke="#ccc" strokeWidth="0.5"/>
+            <rect x="5" y="5" width="5" height="5" fill="#bbb" stroke="#ccc" strokeWidth="0.5"/>
+          </svg>
+        </button>
+        <button onClick={onClose} style={WIN_BTN} title="Закрыть">
+          <svg width="12" height="12" viewBox="0 0 12 12">
+            <line x1="2" y1="2" x2="10" y2="10" stroke="#ddd" strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="10" y1="2" x2="2" y2="10" stroke="#ddd" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Two skip buttons — beige background, black text, thin border */}
+      <div style={{
+        display: 'flex',
+        gap: 6,
+        padding: '6px 10px',
+      }}>
+        <button
+          onClick={onSkip}
+          style={{
+            padding: '5px 14px',
+            backgroundColor: '#e8dcc8',
+            color: '#1a1a1a',
+            border: '1px solid #a09070',
+            borderRadius: 3,
+            fontSize: 11,
+            fontFamily: 'Arial, sans-serif',
+            cursor: 'pointer',
+          }}
+        >
+          Пропустить вводный текст / перейти в основной режим
+        </button>
+        <button
+          onClick={onSkipForever}
+          style={{
+            padding: '5px 14px',
+            backgroundColor: '#e8dcc8',
+            color: '#1a1a1a',
+            border: '1px solid #a09070',
+            borderRadius: 3,
+            fontSize: 11,
+            fontFamily: 'Arial, sans-serif',
+            cursor: 'pointer',
+          }}
+        >
+          Пропустить и не спрашивать больше
+        </button>
+      </div>
+
+      {/* Text area — sandy/beige background with scrollbar */}
+      <div style={{
+        flex: 1,
+        margin: '0 10px 10px',
+        backgroundColor: '#d4bc8a',
+        border: '1px solid #a09070',
+        borderRadius: 3,
+        padding: 16,
+        overflowY: 'auto',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: 13,
+        lineHeight: 1.7,
+        color: '#1a1a1a',
+        whiteSpace: 'pre-wrap',
+      }}>
+        {INTRO_TEXT}
+      </div>
+
+
+      {/* Resize handle in bottom-right corner */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 2,
+          right: 2,
+          width: 16,
+          height: 16,
+          cursor: 'nwse-resize',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        title="Изменить размер"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12">
+          <path d="M11 1L1 11M11 5L5 11M11 9L9 11" stroke="#999" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      </div>
+    </div>
+  );
+};
+
+export default IntroPage;

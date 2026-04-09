@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80">
+  <!-- Рк (Scout/Razvedchik) Black: triangle top, EMPTY, smallest piece -->
+  <path d="M 25,28 L 30,16 L 35,28 Z"
+        fill="#1a1a1a" stroke="#3a2020" stroke-width="2.5"
+        stroke-linejoin="round"/>
+  <path d="M 16,74 L 12,44 L 19,28 L 41,28 L 48,44 L 44,74 Z"
+        fill="#1a1a1a" stroke="#3a2020" stroke-width="2.5"
+        stroke-linejoin="round"/>
+</svg>

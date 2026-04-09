@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80">
+  <!-- Кт (Konnet) Black: OVAL top, 3 long lines, BIGGEST piece -->
+  <ellipse cx="30" cy="14" rx="16" ry="9"
+        fill="#1a1a1a" stroke="#3a2020" stroke-width="2.5"/>
+  <path d="M 9,76 L 4,38 L 12,18 L 48,18 L 56,38 L 51,76 Z"
+        fill="#1a1a1a" stroke="#3a2020" stroke-width="2.5"
+        stroke-linejoin="round"/>
+  <line x1="22" y1="28" x2="22" y2="69" stroke="#f0f0f0" stroke-width="3" stroke-linecap="butt"/>
+  <line x1="30" y1="28" x2="30" y2="69" stroke="#f0f0f0" stroke-width="3" stroke-linecap="butt"/>
+  <line x1="38" y1="28" x2="38" y2="69" stroke="#f0f0f0" stroke-width="3" stroke-linecap="butt"/>
+</svg>

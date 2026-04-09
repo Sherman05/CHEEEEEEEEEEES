@@ -1,0 +1,69 @@
+{
+  "name": "gi-chess-t1-win7",
+  "productName": "GI chess-T1",
+  "version": "0.1.0",
+  "description": "GI chess-T1 — Windows 7 compatible build",
+  "private": true,
+  "main": "electron/main.cjs",
+  "author": "GI chess-T1",
+  "scripts": {
+    "dev:vite": "vite",
+    "build": "vite build",
+    "electron": "electron .",
+    "dist": "vite build && electron-builder --win nsis"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@electron/packager": "^19.1.0",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
+    "electron": "22.3.27",
+    "electron-builder": "^24.13.3",
+    "typescript": "~5.8.3",
+    "vite": "^5.4.10"
+  },
+  "build": {
+    "appId": "com.gichesst1.win7",
+    "productName": "GI chess-T1",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../dist-installer/README.pdf",
+        "to": "README.pdf"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "../dist-installer/icon.ico",
+      "artifactName": "GI chess-T1 (Win7)_${version}_x64-setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "GI chess-T1"
+    }
+  }
+}

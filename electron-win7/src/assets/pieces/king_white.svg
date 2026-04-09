@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80">
+  <!-- Кр (King) White: triangle top WITH window, 1 long + 1 short line -->
+  <path d="M 23,22 L 30,6 L 37,22 Z"
+        fill="#ffffff" stroke="#1a1a1a" stroke-width="2.5"
+        stroke-linejoin="round"/>
+  <!-- Window (cutout) in triangle -->
+  <path d="M 27,19 L 30,12 L 33,19 Z"
+        fill="#a0a0a0" stroke="#1a1a1a" stroke-width="1.2"
+        stroke-linejoin="round"/>
+  <path d="M 13,74 L 8,40 L 16,22 L 44,22 L 52,40 L 47,74 Z"
+        fill="#ffffff" stroke="#1a1a1a" stroke-width="2.5"
+        stroke-linejoin="round"/>
+  <line x1="26" y1="30" x2="26" y2="67" stroke="#1a1a1a" stroke-width="3" stroke-linecap="butt"/>
+  <line x1="34" y1="30" x2="34" y2="50" stroke="#1a1a1a" stroke-width="3" stroke-linecap="butt"/>
+</svg>
