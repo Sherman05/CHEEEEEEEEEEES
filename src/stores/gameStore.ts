@@ -3,6 +3,7 @@ import {
   BoardState,
   Piece,
   PieceColor,
+  PieceType,
   Square,
   createInitialPosition,
   cloneBoard,
@@ -101,6 +102,15 @@ export const useGameStore = create<GameState>((set, get) => ({
     const piece = board.get(from);
     if (!piece) return;
 
+    // Setup-only guard: Knekht cannot be placed on its forbidden ranks
+    // while arranging a position. In play mode the normal move/promotion
+    // rules apply and this guard does not fire.
+    if (state.gameStage === 'setup' && piece.type === PieceType.KNEKHT) {
+      const rank = parseInt(to[1], 10);
+      if (piece.color === PieceColor.WHITE && rank >= 7) return;
+      if (piece.color === PieceColor.BLACK && rank <= 2) return;
+    }
+
     board.delete(from);
     board.set(to, piece);
 
@@ -136,6 +146,13 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   placePiece: (sq, piece) => {
+    // Knekht (pawn) cannot be placed on its forbidden ranks:
+    // white knekht — ranks 7 and 8; black knekht — ranks 1 and 2.
+    if (piece.type === PieceType.KNEKHT) {
+      const rank = parseInt(sq[1], 10);
+      if (piece.color === PieceColor.WHITE && rank >= 7) return;
+      if (piece.color === PieceColor.BLACK && rank <= 2) return;
+    }
     const board = cloneBoard(get().board);
     board.set(sq, piece);
     set({ board });
@@ -308,7 +325,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (!state.selectedForDeletion) return;
     const board = cloneBoard(state.board);
     board.delete(state.selectedForDeletion);
-    set({ board, selectedForDeletion: null });
+    // Clear any highlight that was pointing to the just-deleted cell.
+    set({
+      board,
+      selectedForDeletion: null,
+      lastMove: { from: null, to: null },
+    });
   },
 
   setShowIntro: (show) => set({ showIntro: show }),

@@ -1,12 +1,9 @@
 import React from 'react';
 import { useGameStore, getViewMode } from '../stores/gameStore';
-import { createInitialPosition } from '../logic/pieces';
-import btnReset from '../assets/btn-reset.png';
-import btnMinimize from '../assets/btn-minimize.png';
-import btnOntop from '../assets/btn-ontop.png';
-import btnClose from '../assets/btn-close.png';
+import { createInitialPosition, PieceColor } from '../logic/pieces';
+import { getPieceSvg, getPieceName } from './Piece';
 
-const BTN_SIZE = 36;
+const BTN_SIZE = 32;
 
 const IMG_BTN: React.CSSProperties = {
   width: BTN_SIZE,
@@ -18,6 +15,22 @@ const IMG_BTN: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
+};
+
+// Round metallic window control — same shape as the Intro page,
+// but tinted blue-cyan to match the top bar.
+const WIN_BTN: React.CSSProperties = {
+  width: 26,
+  height: 26,
+  borderRadius: '50%',
+  border: '1.5px solid #1a4f80',
+  background: 'linear-gradient(180deg, #9ed4f5 0%, #5ca8e0 45%, #2f7ec0 75%, #205a98 100%)',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 0,
+  boxShadow: '0 2px 3px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.35)',
 };
 
 interface TopBarProps {
@@ -32,8 +45,14 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
   const { gameMode, gameStage, alwaysOnTop } = useGameStore();
   const viewMode = getViewMode({ gameMode, gameStage });
   const promotionPending = useGameStore((s) => s.promotionPending);
+  const completePromotion = useGameStore((s) => s.completePromotion);
   const setInitialPosition = useGameStore((s) => s.setInitialPosition);
   const setBoard = useGameStore((s) => s.setBoard);
+
+  // Inline white-promotion picker replaces the title while pending.
+  const whitePromotion = promotionPending && promotionPending.piece.color === PieceColor.WHITE
+    ? promotionPending
+    : null;
 
   const isStart = viewMode === 'start';
   const isPartyActive = gameMode === 'party';
@@ -41,27 +60,49 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
   const isSetup = gameStage === 'setup';
 
   const initialPosFrozen = isStart;
-  const partyFrozen = isPartyActive || (isAnalysisActive && isSetup);
-  const analysisFrozen = isAnalysisActive;
+  // Active button looks dark/highlighted; inactive looks pale.
+  // Disabled = analysis-setup forbids switching to party mid-setup.
+  const partyDisabled = isAnalysisActive && isSetup;
+  const analysisDisabled = false;
   const minimizeFrozen = !!promotionPending;
+
+  // Style helper for Партия/Анализ tab buttons.
+  const tabBtnStyle = (active: boolean, disabled: boolean): React.CSSProperties => ({
+    height: 28,
+    borderRadius: 3,
+    border: '1px solid #1a5090',
+    backgroundColor: active ? '#10437a' : '#9cc8e8',
+    color: active ? '#ffffff' : '#1a3a60',
+    cursor: disabled ? 'default' : 'pointer',
+    opacity: disabled ? 0.5 : 1,
+    padding: '0 16px',
+    fontSize: 13,
+    fontWeight: 'bold',
+    fontFamily: 'Arial, sans-serif',
+    boxShadow: active
+      ? 'inset 0 1px 3px rgba(0,0,0,0.5), 0 0 4px rgba(0,40,120,0.4)'
+      : '0 1px 2px rgba(0,0,0,0.2)',
+  });
 
   return (
     <div
+      data-topbar
       style={{
         display: 'flex',
         alignItems: 'center',
         gap: 6,
-        padding: '5px 8px',
+        padding: '4px 8px',
         background: 'linear-gradient(180deg, #8ec8f0 0%, #5aace8 30%, #3a96e0 60%, #2a86d0 100%)',
-        minHeight: 48,
+        minHeight: 40,
         flexShrink: 0,
         position: 'relative',
       }}
     >
-      {/* Начальная расстановка — PNG icon */}
+      {/* Начальная расстановка — inline SVG with white/light-gray cells */}
       <button
         style={{
           ...IMG_BTN,
+          width: 28, height: 28,
           opacity: initialPosFrozen ? 0.4 : 1,
           cursor: initialPosFrozen ? 'default' : 'pointer',
         }}
@@ -72,57 +113,132 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         }}
         title="Начальная расстановка"
       >
-        <img src={btnReset} alt="Начальная расстановка" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
+        {/* 4x4 rounded board per design/icons/Символ_Начальная_расстановка_для_07_04_4х.svg */}
+        <svg width={28} height={28} viewBox="0 0 32 32">
+          <rect x="1.5" y="1.5" width="29" height="29" rx="4" ry="4" fill="#ffffff" stroke="#000000" strokeWidth="2" />
+          {Array.from({ length: 4 }).map((_, r) =>
+            Array.from({ length: 4 }).map((_, c) => {
+              const dark = (r + c) % 2 === 1;
+              return (
+                <rect
+                  key={`${r}-${c}`}
+                  x={3 + c * 6.5}
+                  y={3 + r * 6.5}
+                  width={6.5}
+                  height={6.5}
+                  fill={dark ? '#505050' : '#ffffff'}
+                  stroke="#000000"
+                  strokeWidth="0.5"
+                />
+              );
+            })
+          )}
+        </svg>
       </button>
 
       {/* Партия */}
       <button
-        style={{
-          height: 32, borderRadius: 3, border: '1px solid #1a5090',
-          backgroundColor: partyFrozen ? '#7ab0d0' : '#3a90d0',
-          color: '#fff', cursor: partyFrozen ? 'default' : 'pointer',
-          opacity: partyFrozen ? 0.5 : 1, padding: '0 16px',
-          fontSize: 13, fontWeight: 'bold', fontFamily: 'Arial, sans-serif',
-          boxShadow: isPartyActive ? '0 0 6px rgba(0,40,200,0.5)' : '0 1px 2px rgba(0,0,0,0.2)',
-        }}
-        disabled={partyFrozen} onClick={onPartyClick} title="Партия"
+        style={tabBtnStyle(isPartyActive, partyDisabled)}
+        disabled={partyDisabled} onClick={onPartyClick} title="Партия"
       >Партия</button>
 
       {/* Анализ */}
       <button
-        style={{
-          height: 32, borderRadius: 3, border: '1px solid #1a5090',
-          backgroundColor: analysisFrozen ? '#7ab0d0' : '#3a90d0',
-          color: '#fff', cursor: analysisFrozen ? 'default' : 'pointer',
-          opacity: analysisFrozen ? 0.5 : 1, padding: '0 16px',
-          fontSize: 13, fontWeight: 'bold', fontFamily: 'Arial, sans-serif',
-          boxShadow: isAnalysisActive ? '0 0 6px rgba(0,40,200,0.5)' : '0 1px 2px rgba(0,0,0,0.2)',
-        }}
-        disabled={analysisFrozen} onClick={onAnalysisClick} title="Анализ"
+        style={tabBtnStyle(isAnalysisActive, analysisDisabled)}
+        disabled={analysisDisabled} onClick={onAnalysisClick} title="Анализ"
       >Анализ</button>
 
-      {/* Drag region */}
-      <div data-tauri-drag-region style={{ flex: 1, height: '100%', cursor: 'move', minHeight: 40 }} />
+      {/* Drag region — fills the free space between tabs and window buttons */}
+      <div data-tauri-drag-region style={{ flex: 1, minWidth: 0, height: '100%', cursor: 'move', minHeight: 32 }} />
 
-      {/* Свернуть — PNG icon */}
+      {/* Centered title — absolute, constrained so it never overlaps the
+          Партия/Анализ buttons (~220px on the left) or the window controls
+          (~110px on the right). Clips with ellipsis when the window is narrow. */}
+      <div
+        data-tauri-drag-region
+        style={{
+          position: 'absolute',
+          left: '50%',
+          top: 0,
+          bottom: 0,
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          maxWidth: 'calc(100% - 340px)',
+          overflow: 'visible',
+          pointerEvents: whitePromotion ? 'auto' : 'none',
+          zIndex: 1,
+        }}
+      >
+        {whitePromotion ? (
+          <div style={{ display: 'flex', gap: 3, pointerEvents: 'auto' }}>
+            {whitePromotion.options.map((opt, i) => (
+              <button
+                key={i}
+                onClick={() => completePromotion(opt)}
+                title={getPieceName(opt.type)}
+                style={{
+                  width: 32, height: 32, padding: 1,
+                  border: '1px solid #1a4080',
+                  borderRadius: 3,
+                  background: '#ffffff',
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.4)',
+                }}
+              >
+                <img
+                  src={getPieceSvg(opt)}
+                  alt={getPieceName(opt.type)}
+                  style={{ width: 28, height: 28, objectFit: 'contain' }}
+                  draggable={false}
+                />
+              </button>
+            ))}
+          </div>
+        ) : (
+          <span style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            color: '#ffffff',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: 15,
+            fontWeight: 'bold',
+            textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+            letterSpacing: 0.3,
+          }}>GI chess-T1</span>
+        )}
+      </div>
+
+      {/* Свернуть */}
       <button
-        style={{ ...IMG_BTN, opacity: minimizeFrozen ? 0.4 : 1, cursor: minimizeFrozen ? 'default' : 'pointer' }}
+        style={{ ...WIN_BTN, opacity: minimizeFrozen ? 0.4 : 1, cursor: minimizeFrozen ? 'default' : 'pointer' }}
         disabled={minimizeFrozen} onClick={onMinimize} title="Свернуть"
       >
-        <img src={btnMinimize} alt="Свернуть" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
+        <svg width="12" height="12" viewBox="0 0 12 12">
+          <line x1="2" y1="9" x2="10" y2="9" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+        </svg>
       </button>
 
-      {/* Поверх всех окон — PNG icon */}
+      {/* Поверх всех окон */}
       <button
-        style={{ ...IMG_BTN, ...(alwaysOnTop ? { filter: 'brightness(1.3)' } : {}) }}
+        style={{ ...WIN_BTN, ...(alwaysOnTop ? { filter: 'brightness(1.2)', boxShadow: '0 0 6px rgba(255,255,255,0.6), inset 0 1px 1px rgba(255,255,255,0.4)' } : {}) }}
         onClick={onAlwaysOnTop} title="Поверх всех окон"
       >
-        <img src={btnOntop} alt="Поверх всех окон" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
+        <svg width="12" height="12" viewBox="0 0 12 12">
+          <rect x="1" y="1" width="5" height="5" fill="#cfe6f8" stroke="#fff" strokeWidth="0.6"/>
+          <rect x="5" y="5" width="5" height="5" fill="#9ec6ec" stroke="#fff" strokeWidth="0.6"/>
+        </svg>
       </button>
 
-      {/* Закрыть — PNG icon */}
-      <button style={IMG_BTN} onClick={onClose} title="Закрыть">
-        <img src={btnClose} alt="Закрыть" style={{ width: BTN_SIZE, height: BTN_SIZE }} draggable={false} />
+      {/* Закрыть */}
+      <button style={WIN_BTN} onClick={onClose} title="Закрыть">
+        <svg width="12" height="12" viewBox="0 0 12 12">
+          <line x1="2" y1="2" x2="10" y2="10" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+          <line x1="10" y1="2" x2="2" y2="10" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
       </button>
     </div>
   );

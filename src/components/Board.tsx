@@ -2,23 +2,25 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { useGameStore, getViewMode } from '../stores/gameStore';
 import { FILES, RANKS, Square, toSquare, isCastle, PieceColor, PieceType, boardToSerializable } from '../logic/pieces';
 import type { Piece } from '../logic/pieces';
-import PieceComponent, { getPieceSvg } from './Piece';
+import PieceComponent, { getPieceSvg, getPieceHeightFactor } from './Piece';
 import { checkPromotion } from '../logic/promotion';
 import { checkScoutCapture } from '../logic/scout';
 
 // Design colors — matched to Figma mockup
 const COLORS = {
   lightSquare: '#ffffff',
-  darkSquare: '#b8b8b8',
-  castleSquare: '#d0d0d0',
+  darkSquare: '#6a6a6a',
+  castleSquare: '#c4c4c4',
   boardBorder: '#1a1a1a',   // dark border around the board
   notation: '#333333',       // dark text, no borders
   highlightStart: 'rgba(100, 180, 255, 0.45)',
   highlightHover: 'rgba(100, 180, 255, 0.35)',
   highlightLastMove: 'rgba(100, 180, 255, 0.2)',
   highlightSelected: 'rgba(255, 100, 100, 0.35)',
-  cellBorder: 'rgba(0, 0, 0, 0.12)',
-  gridLine: 'rgba(0, 0, 0, 0.08)',
+  cellBorder: 'rgba(0, 0, 0, 0.45)',
+  gridLine: 'rgba(0, 0, 0, 0.45)',
+  midLine: 'rgba(0, 0, 0, 0.95)',
+  outerBorder: '#1a1a1a',
 };
 
 function isLightSquare(file: string, rank: number): boolean {
@@ -48,23 +50,36 @@ const Board: React.FC = () => {
 
   const viewMode = getViewMode({ gameMode, gameStage });
 
-  // Responsive sizing
+  // Responsive sizing — fixed margin from window edge / bars,
+  // and the board NEVER grows past the available area (no overlap with bars).
+  const BOARD_MARGIN = 4; // minimal gap between board and surrounding edges
   useEffect(() => {
-    const handleResize = () => {
-      if (boardRef.current?.parentElement) {
-        const parent = boardRef.current.parentElement;
-        const maxSize = Math.min(parent.clientWidth - 20, parent.clientHeight - 20);
-        setContainerSize(Math.max(300, maxSize));
-      }
+    const parent = boardRef.current?.parentElement;
+    if (!parent) return;
+    const recompute = () => {
+      const maxSize = Math.min(
+        parent.clientWidth - BOARD_MARGIN * 2,
+        parent.clientHeight - BOARD_MARGIN * 2,
+      );
+      setContainerSize(Math.max(120, maxSize));
     };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(parent);
+    return () => ro.disconnect();
   }, []);
 
-  const notationSize = containerSize * 0.04;
-  const boardSize = containerSize - notationSize * 2;
+  // Outer ring (second contour around the notation row): a few px on every side.
+  const outerRing = Math.max(4, Math.round(containerSize * 0.012));
+  const notationSize = containerSize * 0.045;
+  // Extra gap below the bottom-files row and to the right of the right-ranks col,
+  // so they sit visibly offset from the board.
+  const bottomFileGap = Math.round(notationSize * 0.35);
+  const rightRankGap = Math.round(notationSize * 0.35);
+  const boardSize = containerSize - notationSize * 2 - outerRing * 2 - bottomFileGap;
   const cellSize = boardSize / 8;
+  // Origin of the inner area (notation + board) inside the outer ring.
+  const innerOrigin = outerRing;
 
   const getFiles = useCallback(() => reversed ? [...FILES].reverse() : [...FILES], [reversed]);
   const getRanks = useCallback(() => reversed ? [...RANKS] : [...RANKS].reverse(), [reversed]);
@@ -72,7 +87,7 @@ const Board: React.FC = () => {
   const getSquareFromPos = useCallback((clientX: number, clientY: number): Square | null => {
     if (!boardRef.current) return null;
     const rect = boardRef.current.getBoundingClientRect();
-    const offset = notationSize;
+    const offset = innerOrigin + notationSize;
     const x = clientX - rect.left - offset;
     const y = clientY - rect.top - offset;
     if (x < 0 || y < 0 || x >= boardSize || y >= boardSize) return null;
@@ -84,7 +99,7 @@ const Board: React.FC = () => {
     if (col < 0 || col > 7 || row < 0 || row > 7) return null;
 
     return toSquare(files[col], ranks[row]);
-  }, [boardSize, cellSize, notationSize, getFiles, getRanks]);
+  }, [boardSize, cellSize, notationSize, innerOrigin, getFiles, getRanks]);
 
   const canMove = gameMode !== 'none' && gameStage === 'play' && !promotionPending;
 
@@ -215,9 +230,9 @@ const Board: React.FC = () => {
     // Normal move (including capture)
     movePiece(dragState.fromSquare, targetSq);
 
-    // Check promotions
+    // Promotions only in actual play — never during "Задать позицию".
     const movedPiece = dragState.piece;
-    const promotion = checkPromotion(movedPiece, targetSq);
+    const promotion = gameStage === 'play' ? checkPromotion(movedPiece, targetSq) : null;
     if (promotion) {
       if (promotion.auto) {
         // Auto-promote knekht -> ver_knekht
@@ -286,7 +301,16 @@ const Board: React.FC = () => {
     }
 
     if (targetSq !== dragState.fromSquare) {
-      movePiece(dragState.fromSquare, targetSq);
+      // Knekht cannot be placed on its forbidden ranks even during setup.
+      const p = dragState.piece;
+      const targetRank = parseInt(targetSq[1], 10);
+      const blocked =
+        p.type === PieceType.KNEKHT &&
+        ((p.color === PieceColor.WHITE && targetRank >= 7) ||
+         (p.color === PieceColor.BLACK && targetRank <= 2));
+      if (!blocked) {
+        movePiece(dragState.fromSquare, targetSq);
+      }
     }
 
     setDragState(null);
@@ -347,6 +371,8 @@ const Board: React.FC = () => {
     let bgColor = isLight ? COLORS.lightSquare : COLORS.darkSquare;
     if (castle) bgColor = COLORS.castleSquare;
 
+    // No special line between ranks 4 and 5 — same divider as everywhere else.
+
     let highlight = '';
     if (dragState?.fromSquare === sq) {
       highlight = COLORS.highlightStart;
@@ -399,6 +425,7 @@ const Board: React.FC = () => {
           <PieceComponent
             piece={piece}
             cellSize={cellSize}
+            scale={0.95}
             isDragging={isDragging}
           />
         )}
@@ -412,6 +439,7 @@ const Board: React.FC = () => {
   return (
     <div
       ref={boardRef}
+      data-board-root
       style={{
         width: containerSize,
         height: containerSize,
@@ -426,11 +454,23 @@ const Board: React.FC = () => {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      {/* Outer second contour around the notation row */}
+      <div data-board-outer style={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: containerSize,
+        height: containerSize - bottomFileGap + outerRing, // visually contains the offset bottom row too
+        border: `2px solid ${COLORS.outerBorder}`,
+        boxSizing: 'border-box',
+        pointerEvents: 'none',
+      }} />
+
       {/* Left notation (ranks) — plain text, no borders */}
       <div style={{
         position: 'absolute',
-        left: 0,
-        top: notationSize,
+        left: innerOrigin,
+        top: innerOrigin + notationSize,
         width: notationSize,
         height: boardSize,
         display: 'flex',
@@ -452,11 +492,11 @@ const Board: React.FC = () => {
         ))}
       </div>
 
-      {/* Right notation (ranks) — flush against board */}
+      {/* Right notation (ranks) — shifted further right per design */}
       <div style={{
         position: 'absolute',
-        left: notationSize + boardSize,
-        top: notationSize,
+        left: innerOrigin + notationSize + boardSize + rightRankGap,
+        top: innerOrigin + notationSize,
         width: notationSize,
         height: boardSize,
         display: 'flex',
@@ -481,8 +521,8 @@ const Board: React.FC = () => {
       {/* Top notation (files) — plain text */}
       <div style={{
         position: 'absolute',
-        left: notationSize,
-        top: 0,
+        left: innerOrigin + notationSize,
+        top: innerOrigin,
         width: boardSize,
         height: notationSize,
         display: 'flex',
@@ -504,11 +544,11 @@ const Board: React.FC = () => {
         ))}
       </div>
 
-      {/* Bottom notation (files) — flush against board */}
+      {/* Bottom notation (files) — dropped below the board */}
       <div style={{
         position: 'absolute',
-        left: notationSize,
-        top: notationSize + boardSize,
+        left: innerOrigin + notationSize,
+        top: innerOrigin + notationSize + boardSize + bottomFileGap,
         width: boardSize,
         height: notationSize,
         display: 'flex',
@@ -530,11 +570,11 @@ const Board: React.FC = () => {
         ))}
       </div>
 
-      {/* Board squares — dark border around the board */}
+      {/* Board squares — dark inner border around the board */}
       <div data-board-squares style={{
         position: 'absolute',
-        left: notationSize,
-        top: notationSize,
+        left: innerOrigin + notationSize,
+        top: innerOrigin + notationSize,
         width: boardSize,
         height: boardSize,
         border: `2px solid ${COLORS.boardBorder}`,
@@ -545,18 +585,73 @@ const Board: React.FC = () => {
             renderSquare(file, rank, colIdx, rowIdx)
           )
         )}
+
+        {/* Thick black line between ranks 4 and 5 — always at mid-board */}
+        <div style={{
+          position: 'absolute',
+          left: 0, right: 0,
+          top: cellSize * 4 - 1,
+          height: 2,
+          backgroundColor: '#000000',
+          pointerEvents: 'none',
+        }} />
+
+        {/* Castle outlines — c..f on rank 1 and rank 8 */}
+        {(() => {
+          const castleCols = files.map((f, i) => ['c','d','e','f'].includes(f) ? i : -1).filter(i => i >= 0);
+          if (castleCols.length !== 4) return null;
+          const minCol = Math.min(...castleCols);
+          const ranksList = ranks;
+          const row1 = ranksList.indexOf(1);
+          const row8 = ranksList.indexOf(8);
+          const BW = 2;
+          const mkBox = (row: number) => (
+            <div key={row} style={{
+              position: 'absolute',
+              left: minCol * cellSize,
+              top: row * cellSize,
+              width: cellSize * 4,
+              height: cellSize,
+              border: `${BW}px solid #000000`,
+              boxSizing: 'border-box',
+              pointerEvents: 'none',
+            }} />
+          );
+          // Internal vertical separators (thicker than regular grid)
+          const mkVerts = (row: number) => [1, 2, 3].map(i => (
+            <div key={`v-${row}-${i}`} style={{
+              position: 'absolute',
+              left: (minCol + i) * cellSize - 0.75,
+              top: row * cellSize,
+              width: 1.5,
+              height: cellSize,
+              backgroundColor: '#000000',
+              pointerEvents: 'none',
+            }} />
+          ));
+          return (
+            <>
+              {mkBox(row1)}
+              {mkBox(row8)}
+              {mkVerts(row1)}
+              {mkVerts(row8)}
+            </>
+          );
+        })()}
       </div>
 
-      {/* Drag ghost */}
-      {dragState && (
+      {/* Drag ghost — same height as on-board (no enlargement on drag) */}
+      {dragState && (() => {
+        const ghostHeight = cellSize * 0.95 * getPieceHeightFactor(dragState.piece.type);
+        return (
         <img
           src={getPieceSvg(dragState.piece)}
           style={{
             position: 'fixed',
-            left: dragState.x - cellSize * 0.45,
-            top: dragState.y - cellSize * 0.45,
-            width: cellSize * 0.9,
-            height: cellSize * 0.9,
+            left: dragState.x - ghostHeight / 2,
+            top: dragState.y - ghostHeight / 2,
+            height: ghostHeight,
+            width: 'auto',
             pointerEvents: 'none',
             zIndex: 1000,
             opacity: 0.9,
@@ -564,7 +659,7 @@ const Board: React.FC = () => {
           }}
           draggable={false}
         />
-      )}
+      );})()}
     </div>
   );
 };

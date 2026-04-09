@@ -40,7 +40,7 @@ const MenuPopup: React.FC<MenuPopupProps> = ({ onClose, onAbout, onSavePosition,
           Using fixed positioning to avoid any overflow clipping. */}
       <div style={{
         position: 'fixed',
-        bottom: 54,
+        bottom: 46,
         left: 8,
         width: 210,
         backgroundColor: '#f5f5f5',

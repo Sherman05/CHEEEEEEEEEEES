@@ -96,22 +96,46 @@ const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForeve
       display: 'flex',
       flexDirection: 'column',
       backgroundColor: '#e8d8c0',
-      border: '4px solid #c89830',
       overflow: 'hidden',
       boxSizing: 'border-box',
     }}>
-      {/* Top blue bar */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '6px 10px',
-        gap: 8,
-        background: 'linear-gradient(180deg, #7ec0ee 0%, #4a9ae0 50%, #3a8ad0 100%)',
-        minHeight: 44,
-        flexShrink: 0,
-      }}>
-        {/* Program symbol — decorative */}
+      {/* Top blue bar — draggable window region (data-tauri-drag-region) */}
+      <div
+        data-tauri-drag-region
+        style={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '6px 10px',
+          gap: 8,
+          background: 'linear-gradient(180deg, #7ec0ee 0%, #4a9ae0 50%, #3a8ad0 100%)',
+          minHeight: 44,
+          flexShrink: 0,
+          cursor: 'move',
+        }}
+      >
+        {/* Centered title — sits on top of the drag region, ignores pointer events */}
         <div style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'none',
+          color: '#ffffff',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: 16,
+          fontWeight: 'bold',
+          textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+          letterSpacing: 0.3,
+        }}>
+          GI chess-T1
+        </div>
+        {/* Program symbol — decorative */}
+        <div data-tauri-drag-region style={{
           width: 32, height: 32, borderRadius: 3,
           border: '2px dashed rgba(255,255,255,0.6)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
@@ -143,7 +167,7 @@ const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForeve
           Основной режим
         </button>
 
-        <div style={{ flex: 1 }} />
+        <div data-tauri-drag-region style={{ flex: 1, alignSelf: 'stretch', cursor: 'move' }} />
 
         {/* 3 round buttons: Minimize, AlwaysOnTop, Close */}
         <button onClick={onMinimize} style={WIN_BTN} title="Свернуть">
@@ -220,6 +244,7 @@ const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForeve
       }}>
         {INTRO_TEXT}
       </div>
+
 
       {/* Resize handle in bottom-right corner */}
       <div

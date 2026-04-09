@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    chess_t1_lib::run()
+    gi_chess_t1_lib::run()
 }

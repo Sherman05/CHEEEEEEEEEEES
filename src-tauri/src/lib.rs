@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use tauri::{Manager, LogicalSize, Size};
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -61,6 +61,30 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
+        .setup(|app| {
+            // Clamp main window so it never exceeds the monitor's work area,
+            // even at high DPI scaling (Windows 125% etc.).
+            if let Some(window) = app.get_webview_window("main") {
+                if let Ok(Some(monitor)) = window.current_monitor() {
+                    let scale = monitor.scale_factor();
+                    let phys = monitor.size();
+                    // Reserve a safe margin for the taskbar / window chrome.
+                    let avail_w = (phys.width as f64 / scale) - 20.0;
+                    let avail_h = (phys.height as f64 / scale) - 80.0;
+                    if let Ok(inner) = window.inner_size() {
+                        let cur_w = inner.width as f64 / scale;
+                        let cur_h = inner.height as f64 / scale;
+                        let new_w = cur_w.min(avail_w).max(600.0);
+                        let new_h = cur_h.min(avail_h).max(500.0);
+                        if (new_w - cur_w).abs() > 0.5 || (new_h - cur_h).abs() > 0.5 {
+                            let _ = window.set_size(Size::Logical(LogicalSize { width: new_w, height: new_h }));
+                        }
+                    }
+                    let _ = window.center();
+                }
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             greet,
             create_folder_on_desktop,

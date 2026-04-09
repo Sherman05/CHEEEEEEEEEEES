@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "chess-T1",
+  "productName": "GI chess-T1",
   "version": "0.1.0",
-  "identifier": "com.chesst1.app",
+  "identifier": "com.gichesst1.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,9 +12,9 @@
   "app": {
     "windows": [
       {
-        "title": "chess-T1",
-        "width": 900,
-        "height": 750,
+        "title": "GI chess-T1",
+        "width": 880,
+        "height": 680,
         "minWidth": 600,
         "minHeight": 500,
         "decorations": false,
@@ -29,12 +29,21 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "resources": {
+      "../dist-installer/README.pdf": "README.pdf"
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "languages": ["Russian"],
+        "displayLanguageSelector": false
+      }
+    }
   }
 }

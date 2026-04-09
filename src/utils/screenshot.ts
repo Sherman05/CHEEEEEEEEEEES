@@ -1,7 +1,11 @@
 export async function captureScreenshot(): Promise<Blob | null> {
   try {
     const html2canvas = (await import('html2canvas')).default;
-    const boardEl = document.querySelector('[data-board-capture]') as HTMLElement;
+    // Capture only the board's outer contour (second outline), not the
+    // surrounding piece trays / page background.
+    const boardEl =
+      (document.querySelector('[data-board-root]') as HTMLElement) ||
+      (document.querySelector('[data-board-capture]') as HTMLElement);
     if (!boardEl) return null;
 
     const canvas = await html2canvas(boardEl, {

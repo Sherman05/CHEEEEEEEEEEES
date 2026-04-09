@@ -2,21 +2,22 @@ import React from 'react';
 import { PieceType, PieceColor } from '../logic/pieces';
 import type { Piece as PieceData } from '../logic/pieces';
 
-// Import all piece PNGs from Figma design
-import kingWhite from '../assets/pieces/king_white.png';
-import kingBlack from '../assets/pieces/king_black.png';
-import konnetWhite from '../assets/pieces/konnet_white.png';
-import konnetBlack from '../assets/pieces/konnet_black.png';
-import princeWhite from '../assets/pieces/prince_white.png';
-import princeBlack from '../assets/pieces/prince_black.png';
-import ritterWhite from '../assets/pieces/ritter_white.png';
-import ritterBlack from '../assets/pieces/ritter_black.png';
-import knekhtWhite from '../assets/pieces/knekht_white.png';
-import knekhtBlack from '../assets/pieces/knekht_black.png';
-import verKnekhtWhite from '../assets/pieces/ver_knekht_white.png';
-import verKnekhtBlack from '../assets/pieces/ver_knekht_black.png';
-import scoutWhite from '../assets/pieces/scout_white.png';
-import scoutBlack from '../assets/pieces/scout_black.png';
+// Customer-supplied piece PNGs (design/pieces, copied into src/assets/pieces).
+// All sources are 300px tall — uniform height by construction. Do not modify.
+import kingWhite from '../assets/pieces/korol-white.png';
+import kingBlack from '../assets/pieces/korol-black.png';
+import konnetWhite from '../assets/pieces/konnet-white.png';
+import konnetBlack from '../assets/pieces/konnet-black.png';
+import princeWhite from '../assets/pieces/prints-white.png';
+import princeBlack from '../assets/pieces/prints-black.png';
+import ritterWhite from '../assets/pieces/ritter-white.png';
+import ritterBlack from '../assets/pieces/ritter-black.png';
+import knekhtWhite from '../assets/pieces/knekht-white.png';
+import knekhtBlack from '../assets/pieces/knekht-black.png';
+import verKnekhtWhite from '../assets/pieces/ver-knekht-white.png';
+import verKnekhtBlack from '../assets/pieces/ver-knekht-black.png';
+import scoutWhite from '../assets/pieces/razvedchik-white.png';
+import scoutBlack from '../assets/pieces/razvedchik-black.png';
 
 const PIECE_IMGS: Record<string, string> = {
   [`${PieceType.KING}_${PieceColor.WHITE}`]: kingWhite,
@@ -37,6 +38,29 @@ const PIECE_IMGS: Record<string, string> = {
 
 export function getPieceSvg(piece: PieceData): string {
   return PIECE_IMGS[`${piece.type}_${piece.color}`] || '';
+}
+
+// Per-piece visual size factors. Pawn (Knekht) = 1.0 baseline.
+// All other pieces are scaled DOWN so their rendered height visually
+// matches the pawn's height — design rule: "Выровнять высоту всех фигур
+// под высоту пешки". The PNG artwork itself is unchanged.
+// Tweak these constants to fine-tune; the same factor is reused for the
+// drag ghost so pieces never enlarge while being moved.
+// All customer PNGs are 300px tall and the artwork fills the full height,
+// so by default they all render at exactly the same in-cell height.
+// Per spec, King and Konnet may be slightly taller than the rest.
+export const PIECE_HEIGHT_FACTOR: Record<PieceType, number> = {
+  [PieceType.KING]:       1.08,
+  [PieceType.KONNET]:     1.05,
+  [PieceType.PRINCE]:     1.00,
+  [PieceType.RITTER]:     1.00,
+  [PieceType.VER_KNEKHT]: 1.00,
+  [PieceType.SCOUT]:      1.00,
+  [PieceType.KNEKHT]:     1.00,
+};
+
+export function getPieceHeightFactor(type: PieceType): number {
+  return PIECE_HEIGHT_FACTOR[type] ?? 1;
 }
 
 const PIECE_NAMES: Record<PieceType, string> = {
@@ -60,8 +84,10 @@ interface PieceProps {
   isDragging?: boolean;
 }
 
-const PieceComponent: React.FC<PieceProps> = ({ piece, cellSize, scale = 0.9, isDragging = false }) => {
-  const iconSize = cellSize * scale;
+const PieceComponent: React.FC<PieceProps> = ({ piece, cellSize, scale = 0.95, isDragging = false }) => {
+  const factor = getPieceHeightFactor(piece.type);
+  // Render by HEIGHT, not by square box — preserves source aspect ratio.
+  const iconHeight = cellSize * scale * factor;
   const src = getPieceSvg(piece);
 
   return (
@@ -69,8 +95,9 @@ const PieceComponent: React.FC<PieceProps> = ({ piece, cellSize, scale = 0.9, is
       src={src}
       alt={getPieceName(piece.type)}
       style={{
-        width: iconSize,
-        height: iconSize,
+        height: iconHeight,
+        width: 'auto',
+        maxWidth: cellSize * 0.98,
         pointerEvents: 'none',
         userSelect: 'none',
         // @ts-ignore webkit drag
@@ -80,7 +107,6 @@ const PieceComponent: React.FC<PieceProps> = ({ piece, cellSize, scale = 0.9, is
         bottom: cellSize * 0.02,
         left: '50%',
         transform: 'translateX(-50%)',
-        objectFit: 'contain',
       }}
       draggable={false}
     />

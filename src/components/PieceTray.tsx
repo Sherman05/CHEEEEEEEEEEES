@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { PieceType, PieceColor, toSquare, FILES, RANKS } from '../logic/pieces';
 import type { Piece } from '../logic/pieces';
-import { getPieceSvg, getPieceName } from './Piece';
+import { getPieceSvg, getPieceName, getPieceHeightFactor } from './Piece';
 import { useGameStore } from '../stores/gameStore';
 
 // Order top→bottom: Кр, Кт, Пр, Рт, Кн, ВК, Рк (rows 8→2)
@@ -88,11 +88,12 @@ const PieceTray: React.FC<PieceTrayProps> = ({ color, cellSize }) => {
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
-        padding: '6px 4px',
+        padding: '2px 2px',
         alignItems: 'center',
       }}>
         {ALL_TYPES.map((type) => {
           const piece: Piece = { type, color };
+          const sz = iconSize * getPieceHeightFactor(type);
           return (
             <div
               key={type}
@@ -111,7 +112,7 @@ const PieceTray: React.FC<PieceTrayProps> = ({ color, cellSize }) => {
               <img
                 src={getPieceSvg(piece)}
                 alt={getPieceName(type)}
-                style={{ width: iconSize, height: iconSize, pointerEvents: 'none' }}
+                style={{ height: sz, width: 'auto', maxWidth: iconSize, pointerEvents: 'none' }}
                 draggable={false}
               />
             </div>
@@ -119,17 +120,19 @@ const PieceTray: React.FC<PieceTrayProps> = ({ color, cellSize }) => {
         })}
       </div>
 
-      {/* Drag ghost */}
-      {dragPiece && (
+      {/* Drag ghost — same height as on-tray (no enlargement) */}
+      {dragPiece && (() => {
+        const ghost = iconSize * getPieceHeightFactor(dragPiece.type);
+        return (
         <img
           src={getPieceSvg(dragPiece)}
           alt=""
           style={{
             position: 'fixed',
-            left: dragPos.x - iconSize / 2,
-            top: dragPos.y - iconSize / 2,
-            width: iconSize,
-            height: iconSize,
+            left: dragPos.x - ghost / 2,
+            top: dragPos.y - ghost / 2,
+            height: ghost,
+            width: 'auto',
             pointerEvents: 'none',
             zIndex: 1000,
             opacity: 0.9,
@@ -137,7 +140,7 @@ const PieceTray: React.FC<PieceTrayProps> = ({ color, cellSize }) => {
           }}
           draggable={false}
         />
-      )}
+      );})()}
     </>
   );
 };

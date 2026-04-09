@@ -5,7 +5,6 @@ import Board from './components/Board';
 import TopBar from './components/TopBar';
 import BottomBar from './components/BottomBar';
 import PieceTray from './components/PieceTray';
-import PromotionDialog from './components/PromotionDialog';
 import FolderDialog from './components/FolderDialog';
 import CloseDialog from './components/CloseDialog';
 import MenuPopup from './components/MenuPopup';
@@ -244,21 +243,9 @@ const App: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
-      backgroundColor: '#ffffff',
-      border: '3px solid #1a3060',
+      backgroundColor: '#e8e8e8',
       boxSizing: 'border-box',
     }}>
-      {/* Title bar drag area — visible blue strip */}
-      <div
-        data-tauri-drag-region
-        style={{
-          height: 8,
-          backgroundColor: '#3a8ad0',
-          cursor: 'move',
-          flexShrink: 0,
-        }}
-      />
-
       <TopBar
         onPartyClick={handlePartyClick}
         onAnalysisClick={handleAnalysisClick}
@@ -270,12 +257,15 @@ const App: React.FC = () => {
       {/* Main content */}
       <div style={{
         flex: 1,
+        minHeight: 0,
+        minWidth: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
         position: 'relative',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#e8e8e8',
+        padding: 0,
       }}>
         {isExtended && (
           <PieceTray
@@ -297,7 +287,6 @@ const App: React.FC = () => {
           }}
         >
           <Board />
-          <PromotionDialog cellSize={cellSize} />
         </div>
 
         {isExtended && (
