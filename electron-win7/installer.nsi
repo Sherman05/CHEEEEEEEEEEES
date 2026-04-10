@@ -21,6 +21,8 @@ BrandingText "GI chess-T1 (Windows 7 build)"
 
 !include "MUI2.nsh"
 !define MUI_ABORTWARNING
+!define MUI_ICON "dist-installer\icon.ico"
+!define MUI_UNICON "dist-installer\icon.ico"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
@@ -36,7 +38,8 @@ BrandingText "GI chess-T1 (Windows 7 build)"
 Section "Install"
   SetOutPath "$INSTDIR"
   File /r "${APP_SOURCE_DIR}\*.*"
-  File "..\dist-installer\README.pdf"
+  ; Separate README tailored for the Windows 7 / Electron build
+  File "README.pdf"
 
   ; Shortcuts
   CreateDirectory "$SMPROGRAMS\${APP_NAME}"

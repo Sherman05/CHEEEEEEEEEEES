@@ -17,6 +17,7 @@ function createWindow() {
     resizable: true,
     center: true,
     title: 'GI chess-T1',
+    icon: path.join(__dirname, '..', 'dist-installer', 'icon.ico'),
     backgroundColor: '#e8e8e8',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
