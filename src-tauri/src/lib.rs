@@ -65,6 +65,17 @@ pub fn run() {
             // Clamp main window so it never exceeds the monitor's work area,
             // even at high DPI scaling (Windows 125% etc.).
             if let Some(window) = app.get_webview_window("main") {
+                // Set window icon for taskbar
+                let icon_png = include_bytes!("../icons/128x128.png");
+                let decoder = png::Decoder::new(std::io::Cursor::new(icon_png.as_ref()));
+                if let Ok(mut reader) = decoder.read_info() {
+                    let mut buf = vec![0u8; reader.output_buffer_size()];
+                    if let Ok(info) = reader.next_frame(&mut buf) {
+                        buf.truncate(info.buffer_size());
+                        let icon = tauri::image::Image::new_owned(buf, info.width, info.height);
+                        let _ = window.set_icon(icon);
+                    }
+                }
                 if let Ok(Some(monitor)) = window.current_monitor() {
                     let scale = monitor.scale_factor();
                     let phys = monitor.size();
