@@ -139,41 +139,52 @@ const Board: React.FC = () => {
       // Check if we have a last hovered square to snap to
       if (dragState.hoveredSquare && dragState.hoveredSquare !== dragState.fromSquare) {
         // Snap to last hovered square (between-cells case)
-        const snapSq = dragState.hoveredSquare;
-        const snapTarget = board.get(snapSq);
-        if (!snapTarget || snapTarget.color !== dragState.piece.color) {
-          movePiece(dragState.fromSquare, snapSq);
-          setDragState(null);
-          return;
-        }
+        // Re-use normal path: set targetSq and fall through to all checks below
+        // (knekht restriction, scout capture, promotion)
+      } else {
+        // No valid snap target — piece disappears (dragged off board)
+        // Record in history so prevMove can undo this
+        const store = useGameStore.getState();
+        const newBoard = new Map(board);
+        newBoard.delete(dragState.fromSquare);
+        const nextTurn = store.currentTurn === PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
+        const nextMoveNumber = nextTurn === PieceColor.WHITE ? store.moveNumber + 1 : store.moveNumber;
+        const indicator = nextTurn === PieceColor.WHITE
+          ? `${nextMoveNumber}. __ хб`
+          : `${nextMoveNumber} … __ хч`;
+        const newHistory = store.history.slice(0, store.historyIndex + 1);
+        newHistory.push({
+          board: boardToSerializable(newBoard),
+          moveNumber: nextMoveNumber,
+          currentTurn: nextTurn,
+          indicator,
+          lastMove: { from: dragState.fromSquare, to: null },
+        });
+        useGameStore.setState({
+          board: newBoard,
+          currentTurn: nextTurn,
+          moveNumber: nextMoveNumber,
+          moveIndicator: indicator,
+          lastMove: { from: dragState.fromSquare, to: null },
+          history: newHistory,
+          historyIndex: newHistory.length - 1,
+        });
+        setDragState(null);
+        return;
       }
-      // No valid snap target — piece disappears (dragged off board)
-      removePiece(dragState.fromSquare);
-      // Advance turn
-      const store = useGameStore.getState();
-      const nextTurn = store.currentTurn === PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
-      const nextMoveNumber = nextTurn === PieceColor.WHITE ? store.moveNumber + 1 : store.moveNumber;
-      const indicator = nextTurn === PieceColor.WHITE
-        ? `${nextMoveNumber}. __ хб`
-        : `${nextMoveNumber} … __ хч`;
-      useGameStore.setState({
-        currentTurn: nextTurn,
-        moveNumber: nextMoveNumber,
-        moveIndicator: indicator,
-        lastMove: { from: dragState.fromSquare, to: null },
-      });
-      setDragState(null);
-      return;
     }
 
-    if (targetSq === dragState.fromSquare) {
+    // Resolve actual target: either from getSquareFromPos or from snap
+    const resolvedSq: Square = targetSq || dragState.hoveredSquare!;
+
+    if (resolvedSq === dragState.fromSquare) {
       // Clicked same square — no move, just deselect drag
       setDragState(null);
       return;
     }
 
     // Check if target has own piece
-    const targetPiece = board.get(targetSq);
+    const targetPiece = board.get(resolvedSq);
     if (targetPiece && targetPiece.color === dragState.piece.color) {
       // Can't place on own piece - snap back or go to last hovered
       setDragState(null);
@@ -181,12 +192,12 @@ const Board: React.FC = () => {
     }
 
     // Check scout special capture
-    const scoutResult = checkScoutCapture(dragState.piece, dragState.fromSquare, targetSq, board);
+    const scoutResult = checkScoutCapture(dragState.piece, dragState.fromSquare, resolvedSq, board);
     if (scoutResult) {
       // Both pieces disappear
       const newBoard = new Map(board);
       newBoard.delete(dragState.fromSquare);
-      newBoard.delete(targetSq);
+      newBoard.delete(resolvedSq);
       const store = useGameStore.getState();
       const nextTurn = store.currentTurn === PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
       const nextMoveNumber = nextTurn === PieceColor.WHITE ? store.moveNumber + 1 : store.moveNumber;
@@ -201,13 +212,14 @@ const Board: React.FC = () => {
         moveNumber: nextMoveNumber,
         currentTurn: nextTurn,
         indicator,
+        lastMove: { from: dragState.fromSquare, to: resolvedSq },
       });
 
       useGameStore.setState({
         board: newBoard,
         currentTurn: nextTurn,
         moveNumber: nextMoveNumber,
-        lastMove: { from: dragState.fromSquare, to: targetSq },
+        lastMove: { from: dragState.fromSquare, to: resolvedSq },
         moveIndicator: indicator,
         history: newHistory,
         historyIndex: newHistory.length - 1,
@@ -217,7 +229,7 @@ const Board: React.FC = () => {
     }
 
     // Knekht movement restrictions
-    const targetRank = parseInt(targetSq[1]);
+    const targetRank = parseInt(resolvedSq[1]);
     if (dragState.piece.type === PieceType.KNEKHT && dragState.piece.color === PieceColor.WHITE && targetRank >= 7) {
       setDragState(null);
       return;
@@ -228,21 +240,28 @@ const Board: React.FC = () => {
     }
 
     // Normal move (including capture)
-    movePiece(dragState.fromSquare, targetSq);
+    movePiece(dragState.fromSquare, resolvedSq);
 
     // Promotions only in actual play — never during "Задать позицию".
     const movedPiece = dragState.piece;
-    const promotion = gameStage === 'play' ? checkPromotion(movedPiece, targetSq) : null;
+    const promotion = gameStage === 'play' ? checkPromotion(movedPiece, resolvedSq) : null;
     if (promotion) {
       if (promotion.auto) {
-        // Auto-promote knekht -> ver_knekht
+        // Auto-promote knekht -> ver_knekht (update board AND history)
         const store = useGameStore.getState();
         const newBoard = new Map(store.board);
-        newBoard.set(targetSq, { type: PieceType.VER_KNEKHT, color: movedPiece.color });
-        useGameStore.setState({ board: newBoard });
+        newBoard.set(resolvedSq, { type: PieceType.VER_KNEKHT, color: movedPiece.color });
+        const newHistory = [...store.history];
+        if (newHistory.length > 0) {
+          newHistory[newHistory.length - 1] = {
+            ...newHistory[newHistory.length - 1],
+            board: boardToSerializable(newBoard),
+          };
+        }
+        useGameStore.setState({ board: newBoard, history: newHistory });
       } else {
         setPromotionPending({
-          square: targetSq,
+          square: resolvedSq,
           piece: movedPiece,
           options: promotion.options!,
         });
@@ -265,11 +284,16 @@ const Board: React.FC = () => {
 
     const piece = board.get(sq);
     if (piece) {
-      setSelectedForDeletion(sq);
+      // #6: Toggle — clicking the same piece deselects it
+      if (selectedForDeletion === sq) {
+        setSelectedForDeletion(null);
+      } else {
+        setSelectedForDeletion(sq);
+      }
     } else {
       setSelectedForDeletion(null);
     }
-  }, [dragState, board, gameStage, getSquareFromPos, setSelectedForDeletion]);
+  }, [dragState, board, gameStage, selectedForDeletion, getSquareFromPos, setSelectedForDeletion]);
 
   // Analysis setup - allow placing any piece
   const handleSetupMouseDown = useCallback((e: React.MouseEvent) => {
@@ -306,8 +330,8 @@ const Board: React.FC = () => {
       const targetRank = parseInt(targetSq[1], 10);
       const blocked =
         p.type === PieceType.KNEKHT &&
-        ((p.color === PieceColor.WHITE && targetRank >= 7) ||
-         (p.color === PieceColor.BLACK && targetRank <= 2));
+        ((p.color === PieceColor.WHITE && targetRank >= 6) ||
+         (p.color === PieceColor.BLACK && targetRank <= 3));
       if (!blocked) {
         movePiece(dragState.fromSquare, targetSq);
       }
@@ -356,11 +380,15 @@ const Board: React.FC = () => {
 
     const piece = board.get(sq);
     if (piece) {
-      setSelectedForDeletion(sq);
+      if (selectedForDeletion === sq) {
+        setSelectedForDeletion(null);
+      } else {
+        setSelectedForDeletion(sq);
+      }
     } else {
       setSelectedForDeletion(null);
     }
-  }, [dragState, board, gameMode, getSquareFromPos, setSelectedForDeletion]);
+  }, [dragState, board, gameMode, selectedForDeletion, getSquareFromPos, setSelectedForDeletion]);
 
   const renderSquare = (file: string, rank: number, colIdx: number, rowIdx: number) => {
     const sq = toSquare(file, rank);
@@ -387,6 +415,10 @@ const Board: React.FC = () => {
 
     const isDragging = dragState?.fromSquare === sq;
 
+    // Hide cell borderRight for squares immediately left of the castle (b1, b8)
+    // to prevent doubling with the castle's left vertical line.
+    const isLeftOfCastle = file === 'b' && (rank === 1 || rank === 8);
+
     return (
       <div
         key={sq}
@@ -398,7 +430,7 @@ const Board: React.FC = () => {
           width: cellSize,
           height: cellSize,
           backgroundColor: bgColor,
-          borderRight: `1px solid ${COLORS.gridLine}`,
+          borderRight: isLeftOfCastle ? 'none' : `1px solid ${COLORS.gridLine}`,
           borderBottom: `1px solid ${COLORS.cellBorder}`,
           boxSizing: 'border-box',
         }}
@@ -596,43 +628,58 @@ const Board: React.FC = () => {
           pointerEvents: 'none',
         }} />
 
-        {/* Castle outlines — c..f on rank 1 and rank 8 */}
+        {/* Castle outlines — c..f on rank 1 and rank 8.
+            Drawn as individual lines (divs) to avoid CSS border doubling
+            with the outer board contour.
+            - rank 1 (bottom when normal): draw TOP horizontal only
+            - rank 8 (top when normal): draw BOTTOM horizontal only
+            All 5 vertical lines (left edge, 3 internal, right edge) are 1.5px. */}
         {(() => {
           const castleCols = files.map((f, i) => ['c','d','e','f'].includes(f) ? i : -1).filter(i => i >= 0);
           if (castleCols.length !== 4) return null;
           const minCol = Math.min(...castleCols);
-          const ranksList = ranks;
-          const row1 = ranksList.indexOf(1);
-          const row8 = ranksList.indexOf(8);
-          const BW = 2;
-          const mkBox = (row: number) => (
-            <div key={row} style={{
-              position: 'absolute',
-              left: minCol * cellSize,
-              top: row * cellSize,
-              width: cellSize * 4,
-              height: cellSize,
-              border: `${BW}px solid #000000`,
-              boxSizing: 'border-box',
-              pointerEvents: 'none',
-            }} />
-          );
-          // Internal vertical separators (thicker than regular grid)
-          const mkVerts = (row: number) => [1, 2, 3].map(i => (
+          const row1 = ranks.indexOf(1);
+          const row8 = ranks.indexOf(8);
+          const LW = 1.5; // line width for all castle lines
+
+          // One horizontal line for each castle (the side NOT touching board edge)
+          const mkHoriz = (row: number, isRank1: boolean) => {
+            // rank 1 at board bottom (normal) or top (reversed)
+            const atBottom = (isRank1 && !reversed) || (!isRank1 && reversed);
+            // Draw the OPPOSITE side: if castle is at bottom, draw its top line; vice versa
+            const yPos = atBottom
+              ? row * cellSize                        // top edge of the row
+              : (row + 1) * cellSize - LW;            // bottom edge of the row
+            return (
+              <div key={`castle-h-${row}`} style={{
+                position: 'absolute',
+                left: minCol * cellSize,
+                top: yPos,
+                width: cellSize * 4,
+                height: LW,
+                backgroundColor: '#000000',
+                pointerEvents: 'none',
+              }} />
+            );
+          };
+
+          // 5 vertical lines: left edge (i=0), 3 internal dividers (i=1,2,3), right edge (i=4)
+          const mkVerts = (row: number) => [0, 1, 2, 3, 4].map(i => (
             <div key={`v-${row}-${i}`} style={{
               position: 'absolute',
-              left: (minCol + i) * cellSize - 0.75,
+              left: (minCol + i) * cellSize - LW / 2,
               top: row * cellSize,
-              width: 1.5,
+              width: LW,
               height: cellSize,
               backgroundColor: '#000000',
               pointerEvents: 'none',
             }} />
           ));
+
           return (
             <>
-              {mkBox(row1)}
-              {mkBox(row8)}
+              {mkHoriz(row1, true)}
+              {mkHoriz(row8, false)}
               {mkVerts(row1)}
               {mkVerts(row8)}
             </>

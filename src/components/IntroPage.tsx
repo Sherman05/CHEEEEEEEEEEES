@@ -227,7 +227,8 @@ const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForeve
         </button>
       </div>
 
-      {/* Text area — sandy/beige background with scrollbar */}
+      {/* Text area — sandy/beige background with scrollbar.
+          Uses dangerouslySetInnerHTML so the text can contain <b>, <i>, <u> tags. */}
       <div style={{
         flex: 1,
         margin: '0 10px 10px',
@@ -241,9 +242,9 @@ const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForeve
         lineHeight: 1.7,
         color: '#1a1a1a',
         whiteSpace: 'pre-wrap',
-      }}>
-        {INTRO_TEXT}
-      </div>
+      }}
+        dangerouslySetInnerHTML={{ __html: INTRO_TEXT }}
+      />
 
 
       {/* Resize handle in bottom-right corner */}

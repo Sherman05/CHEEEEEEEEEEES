@@ -15,6 +15,13 @@ fn create_folder_on_desktop(name: String) -> Result<String, String> {
 }
 
 #[tauri::command]
+fn check_folder_exists_on_desktop(name: String) -> Result<bool, String> {
+    let desktop = dirs::desktop_dir().ok_or("Cannot find Desktop directory")?;
+    let folder_path = desktop.join(&name);
+    Ok(folder_path.exists())
+}
+
+#[tauri::command]
 fn get_pictures_dir() -> Result<String, String> {
     let pictures = dirs::picture_dir().ok_or("Cannot find Pictures directory")?;
     Ok(pictures.to_string_lossy().to_string())
@@ -99,6 +106,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             create_folder_on_desktop,
+            check_folder_exists_on_desktop,
             get_pictures_dir,
             save_screenshot
         ])

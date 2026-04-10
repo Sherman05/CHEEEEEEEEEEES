@@ -81,7 +81,7 @@ const App: React.FC = () => {
     }
   }, [folderMode, startParty, startAnalysisPlay]);
 
-  // Cancel = proceed WITHOUT folder
+  // Skip = proceed WITHOUT folder
   const handleFolderCancel = useCallback(() => {
     setShowFolderDialog(false);
     if (folderMode === 'party') {
@@ -90,6 +90,14 @@ const App: React.FC = () => {
       startAnalysisPlay(null);
     }
   }, [folderMode, startParty, startAnalysisPlay]);
+
+  // Dismiss (X) = cancel action entirely, return to previous state
+  const handleFolderDismiss = useCallback(() => {
+    setShowFolderDialog(false);
+    // If from analysis setup → Ok, return to setup (do nothing, already in setup)
+    // If from start → party, return to start (do nothing, already in start)
+    // No state change needed — we just close the dialog
+  }, []);
 
   const handleMinimize = useCallback(async () => {
     try {
@@ -322,6 +330,7 @@ const App: React.FC = () => {
         <FolderDialog
           onConfirm={handleFolderConfirm}
           onCancel={handleFolderCancel}
+          onDismiss={handleFolderDismiss}
         />
       )}
 

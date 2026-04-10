@@ -389,12 +389,12 @@ describe('gameStore', () => {
       expect(useGameStore.getState().board.get('a2')).toBeUndefined();
     });
 
-    it('nextMove clears lastMove', () => {
+    it('nextMove restores lastMove from history (#4)', () => {
       useGameStore.getState().startParty('test');
       useGameStore.getState().movePiece('a2', 'a3');
       useGameStore.getState().prevMove();
       useGameStore.getState().nextMove();
-      expect(useGameStore.getState().lastMove).toEqual({ from: null, to: null });
+      expect(useGameStore.getState().lastMove).toEqual({ from: 'a2', to: 'a3' });
     });
 
     it('multiple prevMove steps back correctly', () => {
