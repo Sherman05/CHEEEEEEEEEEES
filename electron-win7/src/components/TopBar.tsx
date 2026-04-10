@@ -113,22 +113,22 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         }}
         title="Начальная расстановка"
       >
-        {/* 4x4 rounded board per design/icons/Символ_Начальная_расстановка_для_07_04_4х.svg */}
+        {/* 4x4 rounded board with light gap between grid and border */}
         <svg width={28} height={28} viewBox="0 0 32 32">
-          <rect x="1.5" y="1.5" width="29" height="29" rx="4" ry="4" fill="#ffffff" stroke="#000000" strokeWidth="2" />
+          <rect x="1" y="1" width="30" height="30" rx="3" ry="3" fill="#f0f0f0" stroke="#000000" strokeWidth="1" />
           {Array.from({ length: 4 }).map((_, r) =>
             Array.from({ length: 4 }).map((_, c) => {
               const dark = (r + c) % 2 === 1;
               return (
                 <rect
                   key={`${r}-${c}`}
-                  x={3 + c * 6.5}
-                  y={3 + r * 6.5}
-                  width={6.5}
-                  height={6.5}
+                  x={5 + c * 5.5}
+                  y={5 + r * 5.5}
+                  width={5.5}
+                  height={5.5}
                   fill={dark ? '#505050' : '#ffffff'}
                   stroke="#000000"
-                  strokeWidth="0.5"
+                  strokeWidth="0.4"
                 />
               );
             })

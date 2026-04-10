@@ -60,14 +60,14 @@ export const IconDelete: React.FC<IconProps> = ({ size = 32, style }) => (
 export const IconReset: React.FC<IconProps> = ({ size = 32, style }) => (
   <svg width={size} height={size} viewBox="0 0 100 100" style={style}>
     <circle cx="50" cy="50" r="46" fill="#999999" stroke="#000000" strokeWidth="4" />
-    {/* CCW arrow: arc + arrowhead */}
+    {/* CCW arrow: arc from left side + arrowhead pointing left-down */}
     <path
-      d="M 70 36 A 26 26 0 1 0 70 64"
+      d="M 30 36 A 26 26 0 1 1 30 64"
       fill="none"
       stroke="#000000"
       strokeWidth="7"
       strokeLinecap="round"
     />
-    <path d="M 70 22 L 70 40 L 54 36 Z" fill="#000000" stroke="#000000" strokeWidth="3" strokeLinejoin="round" />
+    <path d="M 30 22 L 30 40 L 46 36 Z" fill="#000000" stroke="#000000" strokeWidth="3" strokeLinejoin="round" />
   </svg>
 );

@@ -78,7 +78,7 @@ const App: React.FC = () => {
     }
   }, [folderMode, startParty, startAnalysisPlay]);
 
-  // Cancel = proceed WITHOUT folder
+  // Skip = proceed WITHOUT folder
   const handleFolderCancel = useCallback(() => {
     setShowFolderDialog(false);
     if (folderMode === 'party') {
@@ -87,6 +87,11 @@ const App: React.FC = () => {
       startAnalysisPlay(null);
     }
   }, [folderMode, startParty, startAnalysisPlay]);
+
+  // Dismiss (X) = cancel action entirely, return to previous state
+  const handleFolderDismiss = useCallback(() => {
+    setShowFolderDialog(false);
+  }, []);
 
   const handleMinimize = useCallback(async () => {
     const api = (window as any).electronAPI;
@@ -311,6 +316,7 @@ const App: React.FC = () => {
         <FolderDialog
           onConfirm={handleFolderConfirm}
           onCancel={handleFolderCancel}
+          onDismiss={handleFolderDismiss}
         />
       )}
 

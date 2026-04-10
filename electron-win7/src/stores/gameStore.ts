@@ -20,6 +20,7 @@ interface HistoryEntry {
   moveNumber: number;
   currentTurn: PieceColor;
   indicator: string;
+  lastMove: { from: Square | null; to: Square | null };
 }
 
 interface GameState {
@@ -102,13 +103,18 @@ export const useGameStore = create<GameState>((set, get) => ({
     const piece = board.get(from);
     if (!piece) return;
 
-    // Setup-only guard: Knekht cannot be placed on its forbidden ranks
-    // while arranging a position. In play mode the normal move/promotion
-    // rules apply and this guard does not fire.
-    if (state.gameStage === 'setup' && piece.type === PieceType.KNEKHT) {
-      const rank = parseInt(to[1], 10);
-      if (piece.color === PieceColor.WHITE && rank >= 7) return;
-      if (piece.color === PieceColor.BLACK && rank <= 2) return;
+    // Setup mode: just move the piece, no turn/history changes (#5 fix)
+    if (state.gameStage === 'setup') {
+      // Knekht cannot be placed on forbidden ranks in setup
+      if (piece.type === PieceType.KNEKHT) {
+        const rank = parseInt(to[1], 10);
+        if (piece.color === PieceColor.WHITE && rank >= 6) return;
+        if (piece.color === PieceColor.BLACK && rank <= 3) return;
+      }
+      board.delete(from);
+      board.set(to, piece);
+      set({ board });
+      return;
     }
 
     board.delete(from);
@@ -117,6 +123,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const nextTurn = state.currentTurn === PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
     const nextMoveNumber = nextTurn === PieceColor.WHITE ? state.moveNumber + 1 : state.moveNumber;
     const indicator = buildIndicator(nextMoveNumber, nextTurn);
+    const moveLastMove = { from, to };
 
     // Truncate future history if we went back
     const newHistory = state.history.slice(0, state.historyIndex + 1);
@@ -125,13 +132,14 @@ export const useGameStore = create<GameState>((set, get) => ({
       moveNumber: nextMoveNumber,
       currentTurn: nextTurn,
       indicator,
+      lastMove: moveLastMove,
     });
 
     set({
       board,
       currentTurn: nextTurn,
       moveNumber: nextMoveNumber,
-      lastMove: { from, to },
+      lastMove: moveLastMove,
       history: newHistory,
       historyIndex: newHistory.length - 1,
       moveIndicator: indicator,
@@ -147,15 +155,15 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   placePiece: (sq, piece) => {
     // Knekht (pawn) cannot be placed on its forbidden ranks:
-    // white knekht — ranks 7 and 8; black knekht — ranks 1 and 2.
+    // white knekht — ranks 6, 7 and 8; black knekht — ranks 1, 2 and 3. (#7)
     if (piece.type === PieceType.KNEKHT) {
       const rank = parseInt(sq[1], 10);
-      if (piece.color === PieceColor.WHITE && rank >= 7) return;
-      if (piece.color === PieceColor.BLACK && rank <= 2) return;
+      if (piece.color === PieceColor.WHITE && rank >= 6) return;
+      if (piece.color === PieceColor.BLACK && rank <= 3) return;
     }
     const board = cloneBoard(get().board);
     board.set(sq, piece);
-    set({ board });
+    set({ board, selectedForDeletion: null }); // #6: clear selection when placing from tray
   },
 
   setInitialPosition: () => {
@@ -187,6 +195,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       moveNumber: 1,
       currentTurn: PieceColor.WHITE,
       indicator,
+      lastMove: { from: null, to: null },
     };
     set({
       board,
@@ -229,6 +238,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       moveNumber: 1,
       currentTurn: state.currentTurn,
       indicator,
+      lastMove: { from: null, to: null },
     };
     set({
       gameStage: 'play',
@@ -271,7 +281,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       moveNumber: entry.moveNumber,
       historyIndex: newIndex,
       moveIndicator: entry.indicator,
-      lastMove: { from: null, to: null },
+      lastMove: entry.lastMove, // #4: restore lastMove from history
       selectedForDeletion: null,
     });
   },
@@ -287,7 +297,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       moveNumber: entry.moveNumber,
       historyIndex: newIndex,
       moveIndicator: entry.indicator,
-      lastMove: { from: null, to: null },
+      lastMove: entry.lastMove, // #4: restore lastMove from history
       selectedForDeletion: null,
     });
   },
@@ -338,6 +348,14 @@ export const useGameStore = create<GameState>((set, get) => ({
   setSavedSession: (saved) => set({ savedSession: saved }),
 
   restoreSession: (data) => {
+    // #3: Create initial history entry so prevMove works after first move
+    const entry: HistoryEntry = {
+      board: data.board,
+      moveNumber: data.moveNumber,
+      currentTurn: data.currentTurn,
+      indicator: data.indicator,
+      lastMove: { from: null, to: null },
+    };
     set({
       board: boardFromSerializable(data.board),
       currentTurn: data.currentTurn,
@@ -348,6 +366,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       moveIndicator: data.indicator,
       showIntro: false,
       savedSession: true,
+      history: [entry],
+      historyIndex: 0,
+      lastMove: { from: null, to: null },
     });
   },
 }));
