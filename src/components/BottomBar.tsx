@@ -102,16 +102,30 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
         style={{ width: BTN_SIZE, height: BTN_SIZE, objectFit: 'contain', pointerEvents: 'none' }}
         draggable={false}
       />
-      {/* Dot indicator — marks whose turn is currently first */}
-      <div style={{
-        position: 'absolute',
-        left: '50%',
-        top: currentTurn === 'white' ? '30%' : '70%',
-        width: 5, height: 5, borderRadius: '50%',
-        backgroundColor: currentTurn === 'white' ? '#333' : '#eee',
-        transform: 'translate(-50%, -50%)',
-        pointerEvents: 'none',
-      }} />
+      {/* Dot indicator — marks whose turn is currently first.
+          Rendered conditionally so the inactive key never shows a residual dot. */}
+      {currentTurn === 'white' && (
+        <div style={{
+          position: 'absolute',
+          left: '50%',
+          top: '30%',
+          width: 5, height: 5, borderRadius: '50%',
+          backgroundColor: '#333',
+          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'none',
+        }} />
+      )}
+      {currentTurn === 'black' && (
+        <div style={{
+          position: 'absolute',
+          left: '50%',
+          top: '70%',
+          width: 5, height: 5, borderRadius: '50%',
+          backgroundColor: '#eee',
+          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'none',
+        }} />
+      )}
     </button>
   );
 
@@ -226,7 +240,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
                 onClick={() => completePromotion(opt)}
                 title={getPieceName(opt.type)}
                 style={{
-                  width: 32, height: 32, padding: 1,
+                  width: 36, height: 36, padding: 2,
                   border: '1px solid #555',
                   borderRadius: 3,
                   background: '#ffffff',
@@ -238,7 +252,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
                 <img
                   src={getPieceSvg(opt)}
                   alt={getPieceName(opt.type)}
-                  style={{ width: 28, height: 28, objectFit: 'contain' }}
+                  style={{ width: 30, height: 30, objectFit: 'contain' }}
                   draggable={false}
                 />
               </button>

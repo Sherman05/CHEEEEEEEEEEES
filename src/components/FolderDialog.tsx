@@ -98,7 +98,7 @@ const FolderDialog: React.FC<FolderDialogProps> = ({ onConfirm, onCancel, onDism
         {showOverwrite ? (
           <>
             <div style={{ fontSize: 13, color: '#cc0000', marginBottom: 16 }}>
-              Папка с таким именем уже существует. Перезаписать содержимое?
+              Папка с таким именем уже существует. В эту папку сохранять фото позиций?
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button
@@ -159,7 +159,7 @@ const FolderDialog: React.FC<FolderDialogProps> = ({ onConfirm, onCancel, onDism
               <div style={{ fontSize: 12, color: '#cc0000', marginBottom: 8 }}>{error}</div>
             )}
             <div style={{ fontSize: 12, color: '#666', marginBottom: 16 }}>
-              Папка будет создана на Рабочем столе. Нажмите «Пропустить», чтобы продолжать без создания папки; скриншоты будут сохраняться в папке «Изображения».
+              Папка будет создана на Рабочем столе. Нажмите «Пропустить», чтобы продолжать без создания папки; фото позиций будут сохраняться в папке «Изображения».
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button

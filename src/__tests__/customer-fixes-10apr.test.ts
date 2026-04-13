@@ -86,7 +86,7 @@ describe('Point 2: FolderDialog UI changes', () => {
     expect(cancelBtn).toBeUndefined();
 
     // Bottom text matches spec
-    const expected = 'Папка будет создана на Рабочем столе. Нажмите «Пропустить», чтобы продолжать без создания папки; скриншоты будут сохраняться в папке «Изображения».';
+    const expected = 'Папка будет создана на Рабочем столе. Нажмите «Пропустить», чтобы продолжать без создания папки; фото позиций будут сохраняться в папке «Изображения».';
     expect(screen.getByText(expected)).toBeTruthy();
 
     // X button calls onDismiss, NOT onCancel

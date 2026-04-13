@@ -15,7 +15,7 @@ const COLORS = {
   notation: '#333333',       // dark text, no borders
   highlightStart: 'rgba(100, 180, 255, 0.45)',
   highlightHover: 'rgba(100, 180, 255, 0.35)',
-  highlightLastMove: 'rgba(100, 180, 255, 0.2)',
+  highlightLastMove: 'rgba(100, 180, 255, 0.35)',
   highlightSelected: 'rgba(255, 100, 100, 0.35)',
   cellBorder: 'rgba(0, 0, 0, 0.45)',
   gridLine: 'rgba(0, 0, 0, 0.45)',
@@ -406,7 +406,7 @@ const Board: React.FC = () => {
       highlight = COLORS.highlightStart;
     } else if (dragState?.hoveredSquare === sq && dragState.fromSquare !== sq) {
       highlight = COLORS.highlightHover;
-    } else if (lastMove.to === sq && !dragState) {
+    } else if ((lastMove.to === sq || lastMove.from === sq) && !dragState) {
       highlight = COLORS.highlightLastMove;
     }
     if (selectedForDeletion === sq) {
