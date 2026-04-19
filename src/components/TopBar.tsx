@@ -147,7 +147,8 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         disabled={analysisDisabled} onClick={onAnalysisClick} title="Анализ"
       >Анализ</button>
 
-      {/* Centered title — always visible */}
+      {/* Centered title — absolute so it stays at true center of the bar.
+          maxWidth prevents overlap with tabs (~220px left) and buttons (~120px right). */}
       <div
         data-tauri-drag-region
         style={{
@@ -162,7 +163,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
           maxWidth: 'calc(100% - 340px)',
           overflow: 'hidden',
           pointerEvents: 'none',
-          zIndex: 1,
+          zIndex: 0,
         }}
       >
         <span style={{
@@ -178,7 +179,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         }}>GI chess-T1</span>
       </div>
 
-      {/* Drag region — fills space; white promotion picker sits here in flow */}
+      {/* Drag region — fills space between tabs and window buttons */}
       <div data-tauri-drag-region style={{ flex: 1, minWidth: 0, height: '100%', cursor: 'move', minHeight: 32 }} />
 
       {/* White promotion picker — inline in flow, right of drag region, before window buttons */}
@@ -190,7 +191,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
               onClick={() => completePromotion(opt)}
               title={getPieceName(opt.type)}
               style={{
-                width: 36, height: 36, padding: 2,
+                width: 36, height: 36, padding: 1,
                 border: '1px solid #1a4080',
                 borderRadius: 3,
                 background: '#ffffff',
@@ -201,7 +202,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
               <img
                 src={getPieceSvg(opt)}
                 alt={getPieceName(opt.type)}
-                style={{ width: 30, height: 30, objectFit: 'contain' }}
+                style={{ width: 34, height: 34, objectFit: 'contain' }}
                 draggable={false}
               />
             </button>

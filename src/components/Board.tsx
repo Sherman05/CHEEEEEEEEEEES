@@ -15,7 +15,7 @@ const COLORS = {
   notation: '#333333',       // dark text, no borders
   highlightStart: 'rgba(100, 180, 255, 0.45)',
   highlightHover: 'rgba(100, 180, 255, 0.35)',
-  highlightLastMove: 'rgba(100, 180, 255, 0.35)',
+  highlightLastMove: 'rgba(70, 130, 220, 0.45)',
   highlightLastMoveTo: 'rgba(255, 120, 130, 0.35)',
   highlightSelected: 'rgba(255, 100, 100, 0.35)',
   cellBorder: 'rgba(0, 0, 0, 0.45)',
@@ -41,6 +41,7 @@ const Board: React.FC = () => {
   const boardRef = useRef<HTMLDivElement>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [containerSize, setContainerSize] = useState(600);
+  const justDraggedRef = useRef(false);
 
   const {
     board, currentTurn, gameMode, gameStage, reversed, lastMove,
@@ -170,6 +171,7 @@ const Board: React.FC = () => {
           history: newHistory,
           historyIndex: newHistory.length - 1,
         });
+        justDraggedRef.current = true;
         setDragState(null);
         return;
       }
@@ -225,6 +227,7 @@ const Board: React.FC = () => {
         history: newHistory,
         historyIndex: newHistory.length - 1,
       });
+      justDraggedRef.current = true;
       setDragState(null);
       return;
     }
@@ -269,11 +272,13 @@ const Board: React.FC = () => {
       }
     }
 
+    justDraggedRef.current = true;
     setDragState(null);
   }, [dragState, board, movePiece, removePiece, getSquareFromPos, viewMode, setSelectedForDeletion, setPromotionPending]);
 
   // Handle click for piece selection (for deletion)
   const handleClick = useCallback((e: React.MouseEvent) => {
+    if (justDraggedRef.current) { justDraggedRef.current = false; return; }
     if (dragState) return;
     if (gameStage !== 'setup' && gameStage !== 'play') return;
 
@@ -321,6 +326,7 @@ const Board: React.FC = () => {
     if (!targetSq) {
       // Remove piece if dragged off board
       removePiece(dragState.fromSquare);
+      justDraggedRef.current = true;
       setDragState(null);
       return;
     }
@@ -338,6 +344,7 @@ const Board: React.FC = () => {
       }
     }
 
+    justDraggedRef.current = true;
     setDragState(null);
   }, [dragState, gameStage, getSquareFromPos, movePiece, removePiece]);
 
@@ -370,6 +377,7 @@ const Board: React.FC = () => {
 
   // Handle click for piece selection (for deletion) in play mode too
   const handlePlayClick = useCallback((e: React.MouseEvent) => {
+    if (justDraggedRef.current) { justDraggedRef.current = false; return; }
     if (dragState) return;
     if (gameMode === 'none') return;
 
@@ -402,17 +410,20 @@ const Board: React.FC = () => {
 
     // No special line between ranks 4 and 5 — same divider as everywhere else.
 
+    // Highlight priority: lastMove is king — nothing overwrites it after a move.
+    // During drag, show drag-related highlights instead.
     let highlight = '';
-    if (dragState?.fromSquare === sq) {
-      highlight = COLORS.highlightStart;
-    } else if (dragState?.hoveredSquare === sq && dragState.fromSquare !== sq) {
-      highlight = COLORS.highlightHover;
-    } else if (lastMove.to === sq && !dragState) {
-      highlight = COLORS.highlightLastMoveTo;
-    } else if (lastMove.from === sq && !dragState) {
-      highlight = COLORS.highlightLastMove;
-    }
-    if (selectedForDeletion === sq) {
+    if (dragState) {
+      if (dragState.fromSquare === sq) {
+        highlight = COLORS.highlightStart;
+      } else if (dragState.hoveredSquare === sq && dragState.fromSquare !== sq) {
+        highlight = COLORS.highlightHover;
+      }
+    } else if (lastMove.to === sq) {
+      highlight = COLORS.highlightLastMoveTo;   // розовый — ALWAYS
+    } else if (lastMove.from === sq) {
+      highlight = COLORS.highlightLastMove;      // голубой — ALWAYS
+    } else if (selectedForDeletion === sq) {
       highlight = COLORS.highlightSelected;
     }
 

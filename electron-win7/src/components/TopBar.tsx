@@ -98,7 +98,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         position: 'relative',
       }}
     >
-      {/* Начальная расстановка — inline SVG with white/light-gray cells */}
+      {/* Начальная расстановка — always visible */}
       <button
         style={{
           ...IMG_BTN,
@@ -113,7 +113,6 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         }}
         title="Начальная расстановка"
       >
-        {/* 4x4 rounded board with light gap between grid and border */}
         <svg width={28} height={28} viewBox="0 0 32 32">
           <rect x="1" y="1" width="30" height="30" rx="3" ry="3" fill="#f0f0f0" stroke="#000000" strokeWidth="1" />
           {Array.from({ length: 4 }).map((_, r) =>
@@ -148,12 +147,8 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         disabled={analysisDisabled} onClick={onAnalysisClick} title="Анализ"
       >Анализ</button>
 
-      {/* Drag region — fills the free space between tabs and window buttons */}
-      <div data-tauri-drag-region style={{ flex: 1, minWidth: 0, height: '100%', cursor: 'move', minHeight: 32 }} />
-
-      {/* Centered title — absolute, constrained so it never overlaps the
-          Партия/Анализ buttons (~220px on the left) or the window controls
-          (~110px on the right). Clips with ellipsis when the window is narrow. */}
+      {/* Centered title — absolute so it stays at true center of the bar.
+          maxWidth prevents overlap with tabs (~220px left) and buttons (~120px right). */}
       <div
         data-tauri-drag-region
         style={{
@@ -166,51 +161,54 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
           alignItems: 'center',
           justifyContent: 'center',
           maxWidth: 'calc(100% - 340px)',
-          overflow: 'visible',
-          pointerEvents: whitePromotion ? 'auto' : 'none',
-          zIndex: 1,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+          zIndex: 0,
         }}
       >
-        {whitePromotion ? (
-          <div style={{ display: 'flex', gap: 3, pointerEvents: 'auto' }}>
-            {whitePromotion.options.map((opt, i) => (
-              <button
-                key={i}
-                onClick={() => completePromotion(opt)}
-                title={getPieceName(opt.type)}
-                style={{
-                  width: 32, height: 32, padding: 1,
-                  border: '1px solid #1a4080',
-                  borderRadius: 3,
-                  background: '#ffffff',
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.4)',
-                }}
-              >
-                <img
-                  src={getPieceSvg(opt)}
-                  alt={getPieceName(opt.type)}
-                  style={{ width: 28, height: 28, objectFit: 'contain' }}
-                  draggable={false}
-                />
-              </button>
-            ))}
-          </div>
-        ) : (
-          <span style={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            color: '#ffffff',
-            fontFamily: 'Arial, sans-serif',
-            fontSize: 15,
-            fontWeight: 'bold',
-            textShadow: '0 1px 2px rgba(0,0,0,0.4)',
-            letterSpacing: 0.3,
-          }}>GI chess-T1</span>
-        )}
+        <span style={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          color: '#ffffff',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: 15,
+          fontWeight: 'bold',
+          textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+          letterSpacing: 0.3,
+        }}>GI chess-T1</span>
       </div>
+
+      {/* Drag region — fills space between tabs and window buttons */}
+      <div data-tauri-drag-region style={{ flex: 1, minWidth: 0, height: '100%', cursor: 'move', minHeight: 32 }} />
+
+      {/* White promotion picker — inline in flow, right of drag region, before window buttons */}
+      {whitePromotion && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2, zIndex: 2 }}>
+          {whitePromotion.options.map((opt, i) => (
+            <button
+              key={i}
+              onClick={() => completePromotion(opt)}
+              title={getPieceName(opt.type)}
+              style={{
+                width: 36, height: 36, padding: 1,
+                border: '1px solid #1a4080',
+                borderRadius: 3,
+                background: '#ffffff',
+                cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <img
+                src={getPieceSvg(opt)}
+                alt={getPieceName(opt.type)}
+                style={{ width: 34, height: 34, objectFit: 'contain' }}
+                draggable={false}
+              />
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Свернуть */}
       <button

@@ -55,7 +55,8 @@
         }
       ],
       "icon": "dist-installer/icon.ico",
-      "artifactName": "GI chess-T1 (Win7)_${version}_x64-setup.${ext}"
+      "artifactName": "GI chess-T1 (Win7)_${version}_x64-setup.${ext}",
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,

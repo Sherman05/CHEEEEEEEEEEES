@@ -4,7 +4,7 @@ import { PieceColor } from '../logic/pieces';
 import MoveIndicator from './MoveIndicator';
 import { IconOk, IconMenu, IconDelete, IconReset } from './icons/ButtonIcons';
 import { getPieceSvg, getPieceName } from './Piece';
-import firstMoveIcon from '../assets/icon-first-move.png';
+
 
 
 const BTN_SIZE = 32;
@@ -96,22 +96,40 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
       onClick={onFirstMoveToggle}
       title="Очередь 1-го хода"
     >
-      <img
-        src={firstMoveIcon}
-        alt=""
-        style={{ width: BTN_SIZE, height: BTN_SIZE, objectFit: 'contain', pointerEvents: 'none' }}
-        draggable={false}
-      />
-      {/* Dot indicator — marks whose turn is currently first */}
-      <div style={{
-        position: 'absolute',
-        left: '50%',
-        top: currentTurn === 'white' ? '30%' : '70%',
-        width: 5, height: 5, borderRadius: '50%',
-        backgroundColor: currentTurn === 'white' ? '#333' : '#eee',
-        transform: 'translate(-50%, -50%)',
-        pointerEvents: 'none',
-      }} />
+      {/* Icon drawn as SVG — no pre-baked circle, so the programmatic
+          dot indicator below is the ONLY circle visible. */}
+      <svg width={BTN_SIZE} height={BTN_SIZE} viewBox="0 0 32 32" style={{ pointerEvents: 'none' }}>
+        <rect x="1" y="1" width="30" height="30" rx="4" ry="4"
+              fill="#b0b0b0" stroke="#666" strokeWidth="1.2" />
+        <rect x="4" y="3" width="24" height="13" rx="2" ry="2"
+              fill="#ffffff" stroke="#333" strokeWidth="0.8" />
+        <rect x="4" y="16" width="24" height="13" rx="2" ry="2"
+              fill="#1a1a1a" stroke="#333" strokeWidth="0.8" />
+      </svg>
+      {/* Dot indicator — marks whose turn is currently first.
+          Only ONE dot rendered at a time; the other key stays clean. */}
+      {currentTurn === 'white' && (
+        <div style={{
+          position: 'absolute',
+          left: '50%',
+          top: '30%',
+          width: 6, height: 6, borderRadius: '50%',
+          backgroundColor: '#333',
+          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'none',
+        }} />
+      )}
+      {currentTurn === 'black' && (
+        <div style={{
+          position: 'absolute',
+          left: '50%',
+          top: '70%',
+          width: 6, height: 6, borderRadius: '50%',
+          backgroundColor: '#eee',
+          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'none',
+        }} />
+      )}
     </button>
   );
 
@@ -226,7 +244,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
                 onClick={() => completePromotion(opt)}
                 title={getPieceName(opt.type)}
                 style={{
-                  width: 32, height: 32, padding: 1,
+                  width: 36, height: 36, padding: 1,
                   border: '1px solid #555',
                   borderRadius: 3,
                   background: '#ffffff',
@@ -238,7 +256,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
                 <img
                   src={getPieceSvg(opt)}
                   alt={getPieceName(opt.type)}
-                  style={{ width: 28, height: 28, objectFit: 'contain' }}
+                  style={{ width: 34, height: 34, objectFit: 'contain' }}
                   draggable={false}
                 />
               </button>

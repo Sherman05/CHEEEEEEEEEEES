@@ -247,6 +247,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       history: [entry],
       historyIndex: 0,
       moveIndicator: indicator,
+      selectedForDeletion: null,
+      lastMove: { from: null, to: null },
     });
   },
 
