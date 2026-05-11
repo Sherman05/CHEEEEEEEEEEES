@@ -161,18 +161,20 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
           minHeight: 32,
         }}
       >
-        <span style={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          color: '#ffffff',
-          fontFamily: 'Arial, sans-serif',
-          fontSize: 15,
-          fontWeight: 'bold',
-          textShadow: '0 1px 2px rgba(0,0,0,0.4)',
-          letterSpacing: 0.3,
-          pointerEvents: 'none',
-        }}>GI chess-T1</span>
+        {!whitePromotion && (
+          <span style={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            color: '#ffffff',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: 15,
+            fontWeight: 'bold',
+            textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+            letterSpacing: 0.3,
+            pointerEvents: 'none',
+          }}>GI chess-T1</span>
+        )}
       </div>
 
       {/* White promotion picker — inline in flow, right of drag region, before window buttons */}
