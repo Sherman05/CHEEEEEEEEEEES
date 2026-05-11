@@ -137,51 +137,19 @@ const Board: React.FC = () => {
 
     const targetSq = getSquareFromPos(e.clientX, e.clientY);
 
+    // TASK-01: drop outside any valid cell → revert. No move, no turn change.
+    // Cursor position alone decides the target; notation strip / margin / off-window
+    // all count as "outside" because getSquareFromPos returns null there.
     if (!targetSq) {
-      // Check if we have a last hovered square to snap to
-      if (dragState.hoveredSquare && dragState.hoveredSquare !== dragState.fromSquare) {
-        // Snap to last hovered square (between-cells case)
-        // Re-use normal path: set targetSq and fall through to all checks below
-        // (knekht restriction, scout capture, promotion)
-      } else {
-        // No valid snap target — piece disappears (dragged off board)
-        // Record in history so prevMove can undo this
-        const store = useGameStore.getState();
-        const newBoard = new Map(board);
-        newBoard.delete(dragState.fromSquare);
-        const nextTurn = store.currentTurn === PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
-        const nextMoveNumber = nextTurn === PieceColor.WHITE ? store.moveNumber + 1 : store.moveNumber;
-        const indicator = nextTurn === PieceColor.WHITE
-          ? `${nextMoveNumber}. __ хб`
-          : `${nextMoveNumber} … __ хч`;
-        const newHistory = store.history.slice(0, store.historyIndex + 1);
-        newHistory.push({
-          board: boardToSerializable(newBoard),
-          moveNumber: nextMoveNumber,
-          currentTurn: nextTurn,
-          indicator,
-          lastMove: { from: dragState.fromSquare, to: null },
-        });
-        useGameStore.setState({
-          board: newBoard,
-          currentTurn: nextTurn,
-          moveNumber: nextMoveNumber,
-          moveIndicator: indicator,
-          lastMove: { from: dragState.fromSquare, to: null },
-          history: newHistory,
-          historyIndex: newHistory.length - 1,
-        });
-        justDraggedRef.current = true;
-        setDragState(null);
-        return;
-      }
+      justDraggedRef.current = true;
+      setDragState(null);
+      return;
     }
 
-    // Resolve actual target: either from getSquareFromPos or from snap
-    const resolvedSq: Square = targetSq || dragState.hoveredSquare!;
+    const resolvedSq: Square = targetSq;
 
     if (resolvedSq === dragState.fromSquare) {
-      // Clicked same square — no move, just deselect drag
+      // Clicked same square — no move, allow click handler to fire (selection toggle)
       setDragState(null);
       return;
     }
@@ -323,30 +291,37 @@ const Board: React.FC = () => {
     if (!dragState || gameStage !== 'setup') return;
 
     const targetSq = getSquareFromPos(e.clientX, e.clientY);
+    // TASK-01: drop outside any valid cell → revert. Do NOT remove the piece.
     if (!targetSq) {
-      // Remove piece if dragged off board
-      removePiece(dragState.fromSquare);
       justDraggedRef.current = true;
       setDragState(null);
       return;
     }
 
     if (targetSq !== dragState.fromSquare) {
-      // Knekht cannot be placed on its forbidden ranks even during setup.
+      // Knekht/VerKnecht cannot be placed on their forbidden ranks even during setup.
       const p = dragState.piece;
       const targetRank = parseInt(targetSq[1], 10);
-      const blocked =
+      const knekhtBlocked =
         p.type === PieceType.KNEKHT &&
         ((p.color === PieceColor.WHITE && targetRank >= 6) ||
          (p.color === PieceColor.BLACK && targetRank <= 3));
-      if (!blocked) {
+      // TASK-03: VerKnecht must promote at last rank → no manual placement there.
+      const verKnekhtBlocked =
+        p.type === PieceType.VER_KNEKHT &&
+        ((p.color === PieceColor.WHITE && targetRank === 8) ||
+         (p.color === PieceColor.BLACK && targetRank === 1));
+      if (!knekhtBlocked && !verKnekhtBlocked) {
         movePiece(dragState.fromSquare, targetSq);
       }
+      // TASK-02: only suppress the next click when an actual drag-move was attempted.
+      // A pure click (mousedown+up on same cell) must let the click handler run so
+      // selectedForDeletion gets set and the "Удалить фигуру" button enables.
+      justDraggedRef.current = true;
     }
 
-    justDraggedRef.current = true;
     setDragState(null);
-  }, [dragState, gameStage, getSquareFromPos, movePiece, removePiece]);
+  }, [dragState, gameStage, getSquareFromPos, movePiece]);
 
   const isSetup = gameStage === 'setup';
 

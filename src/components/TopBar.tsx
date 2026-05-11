@@ -147,23 +147,18 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         disabled={analysisDisabled} onClick={onAnalysisClick} title="Анализ"
       >Анализ</button>
 
-      {/* Centered title — absolute so it stays at true center of the bar.
-          maxWidth prevents overlap with tabs (~220px left) and buttons (~120px right). */}
       <div
         data-tauri-drag-region
         style={{
-          position: 'absolute',
-          left: '50%',
-          top: 0,
-          bottom: 0,
-          transform: 'translateX(-50%)',
+          flex: 1,
+          minWidth: 0,
+          height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          maxWidth: 'calc(100% - 340px)',
           overflow: 'hidden',
-          pointerEvents: 'none',
-          zIndex: 0,
+          cursor: 'move',
+          minHeight: 32,
         }}
       >
         <span style={{
@@ -176,11 +171,9 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
           fontWeight: 'bold',
           textShadow: '0 1px 2px rgba(0,0,0,0.4)',
           letterSpacing: 0.3,
+          pointerEvents: 'none',
         }}>GI chess-T1</span>
       </div>
-
-      {/* Drag region — fills space between tabs and window buttons */}
-      <div data-tauri-drag-region style={{ flex: 1, minWidth: 0, height: '100%', cursor: 'move', minHeight: 32 }} />
 
       {/* White promotion picker — inline in flow, right of drag region, before window buttons */}
       {whitePromotion && (
