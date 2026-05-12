@@ -137,9 +137,14 @@ const Board: React.FC = () => {
 
     const targetSq = getSquareFromPos(e.clientX, e.clientY);
 
-    // TASK-01: drop outside any valid cell → revert. No move, no turn change.
-    // Cursor position alone decides the target; notation strip / margin / off-window
-    // all count as "outside" because getSquareFromPos returns null there.
+    // TASK-01 (+ followup): drop outside any valid cell → revert. No move, no
+    // turn change. The dragged piece was never removed from `board`, so it is
+    // still on dragState.fromSquare; setDragState(null) both clears the drag
+    // state (hoveredSquare, fromSquare, cursor ghost) and forces the re-render
+    // that snaps the piece back to its square at full opacity. This React
+    // handler only fires for releases over the board element (notation strip,
+    // board border); releases anywhere else are caught by the window-level
+    // mouseup listener registered while a drag is active (see below).
     if (!targetSq) {
       justDraggedRef.current = true;
       setDragState(null);
@@ -291,7 +296,11 @@ const Board: React.FC = () => {
     if (!dragState || gameStage !== 'setup') return;
 
     const targetSq = getSquareFromPos(e.clientX, e.clientY);
-    // TASK-01: drop outside any valid cell → revert. Do NOT remove the piece.
+    // TASK-01 (+ followup): drop outside any valid cell → revert. Do NOT remove
+    // the piece — it stays on dragState.fromSquare; setDragState(null) clears
+    // the drag state and re-renders so the piece reappears at full opacity.
+    // Releases outside the board element are handled by the window-level
+    // mouseup listener registered while a drag is active (see below).
     if (!targetSq) {
       justDraggedRef.current = true;
       setDragState(null);
@@ -324,6 +333,38 @@ const Board: React.FC = () => {
   }, [dragState, gameStage, getSquareFromPos, movePiece]);
 
   const isSetup = gameStage === 'setup';
+
+  // TASK-01 followup: the board's onMouseUp / onMouseMove only fire for events
+  // that occur over the board element. If a drag is released over a sibling
+  // element (the move list, a toolbar) or outside the window entirely, that
+  // handler never runs — so the drag ghost stays frozen at the board edge and
+  // the source square stays dimmed forever. While a drag is active, also listen
+  // on `window`: keep the ghost glued to the cursor past the board edge, and on
+  // release outside the board fully revert. The dragged piece is never removed
+  // from `board` during a drag, so clearing dragState alone restores it to
+  // fromSquare on the re-render (ghost gone, source square un-dimmed). Events
+  // that land back on the board are deferred to the board's own handlers (the
+  // `overBoard` guard), so a drop is never handled twice.
+  useEffect(() => {
+    if (!dragState) return;
+    const overBoard = (t: EventTarget | null): boolean =>
+      t instanceof Node && !!boardRef.current && boardRef.current.contains(t);
+    const onWindowMove = (e: MouseEvent) => {
+      if (overBoard(e.target)) return;
+      setDragState((prev) =>
+        prev ? { ...prev, x: e.clientX, y: e.clientY, hoveredSquare: null } : null);
+    };
+    const onWindowUp = (e: MouseEvent) => {
+      if (overBoard(e.target)) return;
+      setDragState(null);
+    };
+    window.addEventListener('mousemove', onWindowMove);
+    window.addEventListener('mouseup', onWindowUp);
+    return () => {
+      window.removeEventListener('mousemove', onWindowMove);
+      window.removeEventListener('mouseup', onWindowUp);
+    };
+  }, [dragState]);
 
   // Handle HTML5 drop from PieceTray (analysis setup)
   const handleDragOver = useCallback((e: React.DragEvent) => {

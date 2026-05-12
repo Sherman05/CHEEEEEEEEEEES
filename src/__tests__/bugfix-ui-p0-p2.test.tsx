@@ -151,6 +151,50 @@ describe('TASK-01: drop outside any valid cell reverts (no move, no turn change)
     });
   });
 
+  it('dropReleasedOutsideBoardElement_clearsDragGhostAndKeepsPieceOnOrigin', async () => {
+    // The board's own onMouseUp can't see a release that lands on a sibling
+    // element or outside the window — a window-level listener must catch it,
+    // clear the drag state (no cursor ghost) and leave the piece on its
+    // origin square.
+    useGameStore.getState().startParty('t');
+    const { default: Board } = await import('../components/Board');
+
+    withParentSize(600, () => {
+      const { container } = render(<Board />);
+      const root = container.querySelector('[data-board-root]') as HTMLElement;
+
+      // The drag ghost is the only <img> rendered with position: fixed
+      // (on-board pieces use position: absolute).
+      const hasDragGhost = () =>
+        Array.from(container.querySelectorAll('img'))
+          .some((im) => (im as HTMLElement).style.position === 'fixed');
+
+      const initialTurn = useGameStore.getState().currentTurn;
+      const from = cellCenter('e', 2, 600);
+
+      // Pick up the e2 knekht — the cursor-following ghost appears.
+      act(() => {
+        fireEvent.mouseDown(root, { button: 0, clientX: from.x, clientY: from.y });
+      });
+      expect(hasDragGhost()).toBe(true);
+
+      // Drag past the board and release the button on document.body — i.e.
+      // outside the board element entirely. The board's onMouseUp never sees
+      // this; the window-level listener must revert.
+      act(() => {
+        fireEvent.mouseMove(document.body, { clientX: 4, clientY: 4 });
+        fireEvent.mouseUp(document.body, { button: 0, clientX: 4, clientY: 4 });
+      });
+
+      // Ghost gone, piece reverted to e2, turn untouched.
+      expect(hasDragGhost()).toBe(false);
+      expect(useGameStore.getState().board.get('e2')).toEqual({
+        type: PieceType.KNEKHT, color: PieceColor.WHITE,
+      });
+      expect(useGameStore.getState().currentTurn).toBe(initialTurn);
+    });
+  });
+
   it('setup mode: drop outside board does NOT remove the piece', async () => {
     // Setup: place a single piece, then drag it off the board.
     useGameStore.getState().startAnalysis();
