@@ -3,7 +3,7 @@ import { useGameStore, getViewMode } from '../stores/gameStore';
 import { PieceColor } from '../logic/pieces';
 import MoveIndicator from './MoveIndicator';
 import { IconOk, IconMenu, IconDelete, IconReset } from './icons/ButtonIcons';
-import { getPieceSvg, getPieceName } from './Piece';
+import { getPieceSvg, getPieceName, PROMOTION_PICK_BOX, PROMOTION_PICK_ICON } from './Piece';
 
 
 
@@ -238,7 +238,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
                 onClick={() => completePromotion(opt)}
                 title={getPieceName(opt.type)}
                 style={{
-                  width: 36, height: 36, padding: 1,
+                  width: PROMOTION_PICK_BOX, height: PROMOTION_PICK_BOX, padding: 1,
                   border: '1px solid #555',
                   borderRadius: 3,
                   background: '#ffffff',
@@ -250,7 +250,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
                 <img
                   src={getPieceSvg(opt)}
                   alt={getPieceName(opt.type)}
-                  style={{ width: 34, height: 34, objectFit: 'contain' }}
+                  style={{ width: PROMOTION_PICK_ICON, height: PROMOTION_PICK_ICON, objectFit: 'contain' }}
                   draggable={false}
                 />
               </button>

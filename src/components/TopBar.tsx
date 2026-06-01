@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGameStore, getViewMode } from '../stores/gameStore';
 import { createInitialPosition, PieceColor } from '../logic/pieces';
-import { getPieceSvg, getPieceName } from './Piece';
+import { getPieceSvg, getPieceName, PROMOTION_PICK_BOX, PROMOTION_PICK_ICON } from './Piece';
 
 const BTN_SIZE = 32;
 
@@ -198,7 +198,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
               onClick={() => completePromotion(opt)}
               title={getPieceName(opt.type)}
               style={{
-                width: 36, height: 36, padding: 1,
+                width: PROMOTION_PICK_BOX, height: PROMOTION_PICK_BOX, padding: 1,
                 border: '1px solid #1a4080',
                 borderRadius: 3,
                 background: '#ffffff',
@@ -209,7 +209,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
               <img
                 src={getPieceSvg(opt)}
                 alt={getPieceName(opt.type)}
-                style={{ width: 34, height: 34, objectFit: 'contain' }}
+                style={{ width: PROMOTION_PICK_ICON, height: PROMOTION_PICK_ICON, objectFit: 'contain' }}
                 draggable={false}
               />
             </button>
