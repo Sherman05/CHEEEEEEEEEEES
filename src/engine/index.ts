@@ -2,4 +2,5 @@
 export * from './coords';
 export * from './pieceInfo';
 export * from './movement';
+export * from './forceField';
 export * from './placement';
