@@ -22,6 +22,7 @@ const IMG_BTN: React.CSSProperties = {
 const WIN_BTN: React.CSSProperties = {
   width: 26,
   height: 26,
+  flexShrink: 0,
   borderRadius: '50%',
   border: '1.5px solid #1a4f80',
   background: 'linear-gradient(180deg, #9ed4f5 0%, #5ca8e0 45%, #2f7ec0 75%, #205a98 100%)',
@@ -69,6 +70,9 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
   // Style helper for Партия/Анализ tab buttons.
   const tabBtnStyle = (active: boolean, disabled: boolean): React.CSSProperties => ({
     height: 28,
+    flexShrink: 0,
+    minWidth: 64,
+    whiteSpace: 'nowrap',
     borderRadius: 3,
     border: '1px solid #1a5090',
     backgroundColor: active ? '#10437a' : '#9cc8e8',
@@ -103,6 +107,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         style={{
           ...IMG_BTN,
           width: 28, height: 28,
+          flexShrink: 0,
           opacity: initialPosFrozen ? 0.4 : 1,
           cursor: initialPosFrozen ? 'default' : 'pointer',
         }}
@@ -163,6 +168,13 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
       >
         {!whitePromotion && (
           <span style={{
+            // display:block + width:100% gives the span a definite width so
+            // overflow/ellipsis actually engage — an inline span can't clip,
+            // which let the centered title spill onto the Анализ button when
+            // the window narrowed. Now it shrinks and ellipsises in place.
+            display: 'block',
+            width: '100%',
+            textAlign: 'center',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -179,7 +191,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
 
       {/* White promotion picker — inline in flow, right of drag region, before window buttons */}
       {whitePromotion && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2, zIndex: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2, zIndex: 2, flexShrink: 0 }}>
           {whitePromotion.options.map((opt, i) => (
             <button
               key={i}
