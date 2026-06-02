@@ -161,22 +161,19 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden',
+          overflow: 'visible',
           cursor: 'move',
           minHeight: 32,
         }}
       >
         {!whitePromotion && (
           <span style={{
-            // display:block + width:100% gives the span a definite width so
-            // overflow/ellipsis actually engage — an inline span can't clip,
-            // which let the centered title spill onto the Анализ button when
-            // the window narrowed. Now it shrinks and ellipsises in place.
-            display: 'block',
-            width: '100%',
-            textAlign: 'center',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            // Full title, never clipped. It lives in the flex space *after* the
+            // Анализ button and *before* the window controls and is centred
+            // there, so the whole "GI chess-T1" stays visible and cannot overlap
+            // Анализ at any window width or display scale. flexShrink:0 + nowrap
+            // keep it at full width instead of shrinking/ellipsising.
+            flexShrink: 0,
             whiteSpace: 'nowrap',
             color: '#ffffff',
             fontFamily: 'Arial, sans-serif',
