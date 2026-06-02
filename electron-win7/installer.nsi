@@ -5,7 +5,7 @@ Unicode true
 SetCompressor /SOLID lzma
 
 !define APP_NAME        "GI chess-T1"
-!define APP_VERSION     "0.1.0"
+!define APP_VERSION     "0.2.0"
 !define APP_PUBLISHER   "GI chess-T1"
 !define APP_EXE         "GI chess-T1.exe"
 !define APP_SOURCE_DIR  "release\GI chess-T1-win32-x64"

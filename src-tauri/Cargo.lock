@@ -1302,7 +1302,7 @@ dependencies = [
 
 [[package]]
 name = "gi-chess-t1"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "dirs 5.0.1",
  "png",
