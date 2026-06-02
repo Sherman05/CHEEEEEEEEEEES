@@ -4,7 +4,7 @@ import { FILES, RANKS, Square, toSquare, isCastle, PieceColor, PieceType, boardT
 import type { Piece } from '../logic/pieces';
 import PieceComponent, { getPieceSvg, getPieceHeightFactor } from './Piece';
 import { checkPromotion } from '../logic/promotion';
-import { validateMove, MSG_NO_MAJORITY, MSG_CASTLE_NON_ROYAL } from '../engine';
+import { resolveMove, MSG_NO_MAJORITY, MSG_CASTLE_NON_ROYAL } from '../engine';
 
 // Design colors — matched to Figma mockup
 const COLORS = {
@@ -45,7 +45,7 @@ const Board: React.FC = () => {
     board, currentTurn, gameMode, gameStage, reversed, lastMove,
     promotionPending, selectedForDeletion,
     movePiece, removePiece, setSelectedForDeletion,
-    setPromotionPending, setMoveMessage,
+    setPromotionPending, setMoveMessage, commitMove,
   } = useGameStore();
 
   // Responsive sizing — fixed margin from window edge / bars,
@@ -149,69 +149,32 @@ const Board: React.FC = () => {
       return;
     }
 
-    // Can't land on a friendly piece — silent revert.
-    const targetPiece = board.get(resolvedSq);
-    if (targetPiece && targetPiece.color === dragState.piece.color) {
-      setDragState(null);
-      return;
-    }
-
-    // ── Rules engine: validate before applying (§4–6) ───────────────────────
-    // Party enforces strict turn order (§9); analysis-play keeps its existing
-    // free-turn behaviour (turn already gated at pick-up), so no turn is passed
-    // to the validator there. Movement/force/castle rules apply in both modes.
+    // ── Rules engine: resolve the move (pure), then apply the result ─────────
+    // Party enforces strict turn order (§9); analysis-play passes no turn (free).
+    // resolveMove validates, builds the next board (capture kind) and next side;
+    // this component only applies its result to the store + GUI.
     const turn = gameMode === 'party' ? currentTurn : undefined;
-    const result = validateMove(board, dragState.fromSquare, resolvedSq, { turn });
+    const res = resolveMove(board, dragState.fromSquare, resolvedSq, turn);
 
-    if (!result.allowed) {
+    if (!res.allowed) {
       // §8: brief, non-blocking message only for forbidden *captures*; illegal
-      // simple moves / exchanges are rejected silently.
-      if (result.reason === MSG_NO_MAJORITY || result.reason === MSG_CASTLE_NON_ROYAL) {
-        setMoveMessage(result.reason);
+      // simple moves / exchanges (incl. same-square / onto-friendly) are silent.
+      if (res.reason === MSG_NO_MAJORITY || res.reason === MSG_CASTLE_NON_ROYAL) {
+        setMoveMessage(res.reason);
       }
       setDragState(null);
       return;
     }
 
-    // Scout capture on a castle cell (§5): both attacker and target are removed.
-    if (result.capture === 'scout-exchange') {
-      const store = useGameStore.getState();
-      const newBoard = new Map(board);
-      newBoard.delete(dragState.fromSquare);
-      newBoard.delete(resolvedSq);
-      const nextTurn = store.currentTurn === PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
-      const nextMoveNumber = nextTurn === PieceColor.WHITE ? store.moveNumber + 1 : store.moveNumber;
-      const indicator = nextTurn === PieceColor.WHITE
-        ? `${nextMoveNumber}. __ хб`
-        : `${nextMoveNumber} … __ хч`;
-      const newHistory = store.history.slice(0, store.historyIndex + 1);
-      newHistory.push({
-        board: boardToSerializable(newBoard),
-        moveNumber: nextMoveNumber,
-        currentTurn: nextTurn,
-        indicator,
-        lastMove: { from: dragState.fromSquare, to: resolvedSq },
-      });
-      useGameStore.setState({
-        board: newBoard,
-        currentTurn: nextTurn,
-        moveNumber: nextMoveNumber,
-        lastMove: { from: dragState.fromSquare, to: resolvedSq },
-        moveIndicator: indicator,
-        history: newHistory,
-        historyIndex: newHistory.length - 1,
-      });
-      setDragState(null);
-      return;
-    }
+    commitMove(res.nextBoard, res.nextTurn, dragState.fromSquare, resolvedSq);
 
-    // Normal move or normal capture ('none' | 'normal'): movePiece overwrites
-    // the target cell, removing a captured enemy piece implicitly.
-    movePiece(dragState.fromSquare, resolvedSq);
-
-    // Promotions only in actual play — never during "Задать позицию".
+    // Promotions only in actual play, and never for a scout-exchange (the piece
+    // is gone). Never during "Задать позицию".
     const movedPiece = dragState.piece;
-    const promotion = gameStage === 'play' ? checkPromotion(movedPiece, resolvedSq) : null;
+    const promotion =
+      res.captureKind !== 'scout-exchange' && gameStage === 'play'
+        ? checkPromotion(movedPiece, resolvedSq)
+        : null;
     if (promotion) {
       if (promotion.auto) {
         // Auto-promote knekht -> ver_knekht (update board AND history)
@@ -236,7 +199,7 @@ const Board: React.FC = () => {
     }
 
     setDragState(null);
-  }, [dragState, board, currentTurn, gameMode, gameStage, movePiece, getSquareFromPos, setPromotionPending, setMoveMessage]);
+  }, [dragState, board, currentTurn, gameMode, gameStage, commitMove, getSquareFromPos, setPromotionPending, setMoveMessage]);
 
   // Handle click for piece selection (for deletion)
   const handleClick = useCallback((e: React.MouseEvent) => {
