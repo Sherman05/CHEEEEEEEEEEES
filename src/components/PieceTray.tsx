@@ -90,6 +90,12 @@ const PieceTray: React.FC<PieceTrayProps> = ({ color, cellSize }) => {
         gap: 2,
         padding: '2px 2px',
         alignItems: 'center',
+        // TASK-06: cap height to the available space and scroll vertically
+        // so all pieces remain reachable when the window is short.
+        maxHeight: '100%',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        alignSelf: 'stretch',
       }}>
         {ALL_TYPES.map((type) => {
           const piece: Piece = { type, color };

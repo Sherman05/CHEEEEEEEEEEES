@@ -117,6 +117,13 @@ export const useGameStore = create<GameState>((set, get) => ({
         if (piece.color === PieceColor.WHITE && rank >= 6) return;
         if (piece.color === PieceColor.BLACK && rank <= 3) return;
       }
+      // TASK-03: VerKnecht on the last rank must auto-promote, so manual
+      // placement there is forbidden (white VK on rank 8, black VK on rank 1).
+      if (piece.type === PieceType.VER_KNEKHT) {
+        const rank = parseInt(to[1], 10);
+        if (piece.color === PieceColor.WHITE && rank === 8) return;
+        if (piece.color === PieceColor.BLACK && rank === 1) return;
+      }
       board.delete(from);
       board.set(to, piece);
       set({ board });
@@ -166,6 +173,13 @@ export const useGameStore = create<GameState>((set, get) => ({
       const rank = parseInt(sq[1], 10);
       if (piece.color === PieceColor.WHITE && rank >= 6) return;
       if (piece.color === PieceColor.BLACK && rank <= 3) return;
+    }
+    // TASK-03: VerKnecht must auto-promote on the last rank, so manual
+    // placement there is forbidden (white VK on rank 8, black VK on rank 1).
+    if (piece.type === PieceType.VER_KNEKHT) {
+      const rank = parseInt(sq[1], 10);
+      if (piece.color === PieceColor.WHITE && rank === 8) return;
+      if (piece.color === PieceColor.BLACK && rank === 1) return;
     }
     const board = cloneBoard(get().board);
     board.set(sq, piece);
@@ -253,6 +267,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       history: [entry],
       historyIndex: 0,
       moveIndicator: indicator,
+      selectedForDeletion: null,
+      lastMove: { from: null, to: null },
     });
   },
 

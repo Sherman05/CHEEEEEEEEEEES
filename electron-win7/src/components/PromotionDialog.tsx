@@ -39,8 +39,8 @@ const PromotionDialog: React.FC<{ cellSize: number }> = ({ cellSize }) => {
   const isWhite = piece.color === PieceColor.WHITE;
 
   // Compact icons — must fit inside a button-bar row (~40px tall).
-  const iconSize = Math.min(28, cellSize * 0.55);
-  const buttonBox = iconSize + 6;
+  const iconSize = Math.min(40, cellSize * 0.8);
+  const buttonBox = iconSize + 8;
 
   // Horizontally centered over the board. Vertically: for white, sit INSIDE
   // the top button bar (above the board, clipping into the row of file

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGameStore, getViewMode } from '../stores/gameStore';
 import { createInitialPosition, PieceColor } from '../logic/pieces';
-import { getPieceSvg, getPieceName } from './Piece';
+import { getPieceSvg, getPieceName, PROMOTION_PICK_BOX, PROMOTION_PICK_ICON } from './Piece';
 
 const BTN_SIZE = 32;
 
@@ -22,6 +22,7 @@ const IMG_BTN: React.CSSProperties = {
 const WIN_BTN: React.CSSProperties = {
   width: 26,
   height: 26,
+  flexShrink: 0,
   borderRadius: '50%',
   border: '1.5px solid #1a4f80',
   background: 'linear-gradient(180deg, #9ed4f5 0%, #5ca8e0 45%, #2f7ec0 75%, #205a98 100%)',
@@ -69,6 +70,9 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
   // Style helper for Партия/Анализ tab buttons.
   const tabBtnStyle = (active: boolean, disabled: boolean): React.CSSProperties => ({
     height: 28,
+    flexShrink: 0,
+    minWidth: 64,
+    whiteSpace: 'nowrap',
     borderRadius: 3,
     border: '1px solid #1a5090',
     backgroundColor: active ? '#10437a' : '#9cc8e8',
@@ -103,6 +107,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         style={{
           ...IMG_BTN,
           width: 28, height: 28,
+          flexShrink: 0,
           opacity: initialPosFrozen ? 0.4 : 1,
           cursor: initialPosFrozen ? 'default' : 'pointer',
         }}
@@ -147,50 +152,50 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
         disabled={analysisDisabled} onClick={onAnalysisClick} title="Анализ"
       >Анализ</button>
 
-      {/* Centered title — always visible */}
       <div
         data-tauri-drag-region
         style={{
-          position: 'absolute',
-          left: '50%',
-          top: 0,
-          bottom: 0,
-          transform: 'translateX(-50%)',
+          flex: 1,
+          minWidth: 0,
+          height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          maxWidth: 'calc(100% - 340px)',
-          overflow: 'hidden',
-          pointerEvents: 'none',
-          zIndex: 1,
+          overflow: 'visible',
+          cursor: 'move',
+          minHeight: 32,
         }}
       >
-        <span style={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          color: '#ffffff',
-          fontFamily: 'Arial, sans-serif',
-          fontSize: 15,
-          fontWeight: 'bold',
-          textShadow: '0 1px 2px rgba(0,0,0,0.4)',
-          letterSpacing: 0.3,
-        }}>GI chess-T1</span>
+        {!whitePromotion && (
+          <span style={{
+            // Full title, never clipped. It lives in the flex space *after* the
+            // Анализ button and *before* the window controls and is centred
+            // there, so the whole "GI chess-T1" stays visible and cannot overlap
+            // Анализ at any window width or display scale. flexShrink:0 + nowrap
+            // keep it at full width instead of shrinking/ellipsising.
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+            color: '#ffffff',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: 15,
+            fontWeight: 'bold',
+            textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+            letterSpacing: 0.3,
+            pointerEvents: 'none',
+          }}>GI chess-T1</span>
+        )}
       </div>
-
-      {/* Drag region — fills space; white promotion picker sits here in flow */}
-      <div data-tauri-drag-region style={{ flex: 1, minWidth: 0, height: '100%', cursor: 'move', minHeight: 32 }} />
 
       {/* White promotion picker — inline in flow, right of drag region, before window buttons */}
       {whitePromotion && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2, zIndex: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2, zIndex: 2, flexShrink: 0 }}>
           {whitePromotion.options.map((opt, i) => (
             <button
               key={i}
               onClick={() => completePromotion(opt)}
               title={getPieceName(opt.type)}
               style={{
-                width: 36, height: 36, padding: 2,
+                width: PROMOTION_PICK_BOX, height: PROMOTION_PICK_BOX, padding: 1,
                 border: '1px solid #1a4080',
                 borderRadius: 3,
                 background: '#ffffff',
@@ -201,7 +206,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
               <img
                 src={getPieceSvg(opt)}
                 alt={getPieceName(opt.type)}
-                style={{ width: 30, height: 30, objectFit: 'contain' }}
+                style={{ width: PROMOTION_PICK_ICON, height: PROMOTION_PICK_ICON, objectFit: 'contain' }}
                 draggable={false}
               />
             </button>

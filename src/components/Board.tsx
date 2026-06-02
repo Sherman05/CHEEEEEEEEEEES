@@ -15,7 +15,7 @@ const COLORS = {
   notation: '#333333',       // dark text, no borders
   highlightStart: 'rgba(100, 180, 255, 0.45)',
   highlightHover: 'rgba(100, 180, 255, 0.35)',
-  highlightLastMove: 'rgba(100, 180, 255, 0.35)',
+  highlightLastMove: 'rgba(70, 130, 220, 0.45)',
   highlightLastMoveTo: 'rgba(255, 120, 130, 0.35)',
   highlightSelected: 'rgba(255, 100, 100, 0.35)',
   cellBorder: 'rgba(0, 0, 0, 0.45)',
@@ -41,11 +41,12 @@ const Board: React.FC = () => {
   const boardRef = useRef<HTMLDivElement>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [containerSize, setContainerSize] = useState(600);
+  const justDraggedRef = useRef(false);
 
   const {
     board, currentTurn, gameMode, gameStage, reversed, lastMove,
     promotionPending, selectedForDeletion,
-    movePiece, removePiece, setSelectedForDeletion,
+    movePiece, setSelectedForDeletion,
     setPromotionPending, setMoveMessage, commitMove,
   } = useGameStore();
 
@@ -133,19 +134,21 @@ const Board: React.FC = () => {
     if (!dragState) return;
 
     const targetSq = getSquareFromPos(e.clientX, e.clientY);
-    const hasSnap = !!(dragState.hoveredSquare && dragState.hoveredSquare !== dragState.fromSquare);
-
-    // Dropped off the board with nothing to snap to → not a move, revert
-    // (the piece returns to its square; no state change).
-    if (!targetSq && !hasSnap) {
+    // TASK-01: drop outside any valid cell → revert. No move, no turn change.
+    // The dragged piece was never removed from `board`, so setDragState(null)
+    // snaps it back. This React handler fires for releases over the board
+    // element; releases elsewhere are caught by the window-level mouseup
+    // listener registered while a drag is active (see below).
+    if (!targetSq) {
+      justDraggedRef.current = true;
       setDragState(null);
       return;
     }
 
-    // Resolve actual target: either from getSquareFromPos or from snap.
-    const resolvedSq: Square = targetSq || dragState.hoveredSquare!;
+    const resolvedSq: Square = targetSq;
 
     if (resolvedSq === dragState.fromSquare) {
+      // Same square — no move; allow the click handler to fire (selection toggle).
       setDragState(null);
       return;
     }
@@ -199,11 +202,13 @@ const Board: React.FC = () => {
       }
     }
 
+    justDraggedRef.current = true;
     setDragState(null);
   }, [dragState, board, currentTurn, gameMode, gameStage, commitMove, getSquareFromPos, setPromotionPending, setMoveMessage]);
 
   // Handle click for piece selection (for deletion)
   const handleClick = useCallback((e: React.MouseEvent) => {
+    if (justDraggedRef.current) { justDraggedRef.current = false; return; }
     if (dragState) return;
     if (gameStage !== 'setup' && gameStage !== 'play') return;
 
@@ -248,30 +253,75 @@ const Board: React.FC = () => {
     if (!dragState || gameStage !== 'setup') return;
 
     const targetSq = getSquareFromPos(e.clientX, e.clientY);
+    // TASK-01 (+ followup): drop outside any valid cell → revert. Do NOT remove
+    // the piece — it stays on dragState.fromSquare; setDragState(null) clears
+    // the drag state and re-renders so the piece reappears at full opacity.
+    // Releases outside the board element are handled by the window-level
+    // mouseup listener registered while a drag is active (see below).
     if (!targetSq) {
-      // Remove piece if dragged off board
-      removePiece(dragState.fromSquare);
+      justDraggedRef.current = true;
       setDragState(null);
       return;
     }
 
     if (targetSq !== dragState.fromSquare) {
-      // Knekht cannot be placed on its forbidden ranks even during setup.
+      // Knekht/VerKnecht cannot be placed on their forbidden ranks even during setup.
       const p = dragState.piece;
       const targetRank = parseInt(targetSq[1], 10);
-      const blocked =
+      const knekhtBlocked =
         p.type === PieceType.KNEKHT &&
         ((p.color === PieceColor.WHITE && targetRank >= 6) ||
          (p.color === PieceColor.BLACK && targetRank <= 3));
-      if (!blocked) {
+      // TASK-03: VerKnecht must promote at last rank → no manual placement there.
+      const verKnekhtBlocked =
+        p.type === PieceType.VER_KNEKHT &&
+        ((p.color === PieceColor.WHITE && targetRank === 8) ||
+         (p.color === PieceColor.BLACK && targetRank === 1));
+      if (!knekhtBlocked && !verKnekhtBlocked) {
         movePiece(dragState.fromSquare, targetSq);
       }
+      // TASK-02: only suppress the next click when an actual drag-move was attempted.
+      // A pure click (mousedown+up on same cell) must let the click handler run so
+      // selectedForDeletion gets set and the "Удалить фигуру" button enables.
+      justDraggedRef.current = true;
     }
 
     setDragState(null);
-  }, [dragState, gameStage, getSquareFromPos, movePiece, removePiece]);
+  }, [dragState, gameStage, getSquareFromPos, movePiece]);
 
   const isSetup = gameStage === 'setup';
+
+  // TASK-01 followup: the board's onMouseUp / onMouseMove only fire for events
+  // that occur over the board element. If a drag is released over a sibling
+  // element (the move list, a toolbar) or outside the window entirely, that
+  // handler never runs — so the drag ghost stays frozen at the board edge and
+  // the source square stays dimmed forever. While a drag is active, also listen
+  // on `window`: keep the ghost glued to the cursor past the board edge, and on
+  // release outside the board fully revert. The dragged piece is never removed
+  // from `board` during a drag, so clearing dragState alone restores it to
+  // fromSquare on the re-render (ghost gone, source square un-dimmed). Events
+  // that land back on the board are deferred to the board's own handlers (the
+  // `overBoard` guard), so a drop is never handled twice.
+  useEffect(() => {
+    if (!dragState) return;
+    const overBoard = (t: EventTarget | null): boolean =>
+      t instanceof Node && !!boardRef.current && boardRef.current.contains(t);
+    const onWindowMove = (e: MouseEvent) => {
+      if (overBoard(e.target)) return;
+      setDragState((prev) =>
+        prev ? { ...prev, x: e.clientX, y: e.clientY, hoveredSquare: null } : null);
+    };
+    const onWindowUp = (e: MouseEvent) => {
+      if (overBoard(e.target)) return;
+      setDragState(null);
+    };
+    window.addEventListener('mousemove', onWindowMove);
+    window.addEventListener('mouseup', onWindowUp);
+    return () => {
+      window.removeEventListener('mousemove', onWindowMove);
+      window.removeEventListener('mouseup', onWindowUp);
+    };
+  }, [dragState]);
 
   // Handle HTML5 drop from PieceTray (analysis setup)
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -300,6 +350,7 @@ const Board: React.FC = () => {
 
   // Handle click for piece selection (for deletion) in play mode too
   const handlePlayClick = useCallback((e: React.MouseEvent) => {
+    if (justDraggedRef.current) { justDraggedRef.current = false; return; }
     if (dragState) return;
     if (gameMode === 'none') return;
 
@@ -332,17 +383,20 @@ const Board: React.FC = () => {
 
     // No special line between ranks 4 and 5 — same divider as everywhere else.
 
+    // Highlight priority: lastMove is king — nothing overwrites it after a move.
+    // During drag, show drag-related highlights instead.
     let highlight = '';
-    if (dragState?.fromSquare === sq) {
-      highlight = COLORS.highlightStart;
-    } else if (dragState?.hoveredSquare === sq && dragState.fromSquare !== sq) {
-      highlight = COLORS.highlightHover;
-    } else if (lastMove.to === sq && !dragState) {
-      highlight = COLORS.highlightLastMoveTo;
-    } else if (lastMove.from === sq && !dragState) {
-      highlight = COLORS.highlightLastMove;
-    }
-    if (selectedForDeletion === sq) {
+    if (dragState) {
+      if (dragState.fromSquare === sq) {
+        highlight = COLORS.highlightStart;
+      } else if (dragState.hoveredSquare === sq && dragState.fromSquare !== sq) {
+        highlight = COLORS.highlightHover;
+      }
+    } else if (lastMove.to === sq) {
+      highlight = COLORS.highlightLastMoveTo;   // розовый — ALWAYS
+    } else if (lastMove.from === sq) {
+      highlight = COLORS.highlightLastMove;      // голубой — ALWAYS
+    } else if (selectedForDeletion === sq) {
       highlight = COLORS.highlightSelected;
     }
 

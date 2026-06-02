@@ -40,6 +40,17 @@ export function getPieceSvg(piece: PieceData): string {
   return PIECE_IMGS[`${piece.type}_${piece.color}`] || '';
 }
 
+// ── Promotion piece-picker sizing ───────────────────────────────────────────
+// Size (px) of the little squares shown when choosing a piece for promotion —
+// white picker lives in the TopBar, black picker in the BottomBar. Tune these
+// two numbers here to resize the boxes / icons in BOTH pickers at once:
+//   PROMOTION_PICK_BOX  — outer square (button) size
+//   PROMOTION_PICK_ICON — piece image size inside the square
+// ICON is squeezed up to the full box size so the piece fills the square; the
+// 1px button border/padding is covered by the (transparent-edged) image.
+export const PROMOTION_PICK_BOX = 36;
+export const PROMOTION_PICK_ICON = 36;
+
 // Per-piece visual size factors. Pawn (Knekht) = 1.0 baseline.
 // All other pieces are scaled DOWN so their rendered height visually
 // matches the pawn's height — design rule: "Выровнять высоту всех фигур

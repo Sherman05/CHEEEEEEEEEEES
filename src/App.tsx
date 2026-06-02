@@ -244,6 +244,7 @@ const App: React.FC = () => {
           onMinimize={handleMinimize}
           onAlwaysOnTop={handleAlwaysOnTop}
           onClose={handleClose}
+          fromAbout={returnFromIntro}
         />
       </div>
     );
