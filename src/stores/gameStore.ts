@@ -38,6 +38,8 @@ interface GameState {
   promotionPending: { square: Square; piece: Piece; options: Piece[] } | null;
   selectedForDeletion: Square | null;
   moveIndicator: string;
+  /** Transient §8 message for a rejected capturing move (shown briefly, non-blocking). */
+  moveMessage: string;
   introSkipped: boolean;
   showIntro: boolean;
   savedSession: boolean;
@@ -62,6 +64,7 @@ interface GameState {
   completePromotion: (piece: Piece) => void;
   setSelectedForDeletion: (sq: Square | null) => void;
   deleteSelectedPiece: () => void;
+  setMoveMessage: (msg: string) => void;
   setShowIntro: (show: boolean) => void;
   setIntroSkipped: (skipped: boolean) => void;
   setSavedSession: (saved: boolean) => void;
@@ -91,6 +94,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   promotionPending: null,
   selectedForDeletion: null,
   moveIndicator: '',
+  moveMessage: '',
   introSkipped: false,
   showIntro: true,
   savedSession: false,
@@ -331,6 +335,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   setSelectedForDeletion: (sq) => set({ selectedForDeletion: sq }),
+
+  setMoveMessage: (msg) => set({ moveMessage: msg }),
 
   deleteSelectedPiece: () => {
     const state = get();

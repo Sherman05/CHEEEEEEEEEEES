@@ -1,10 +1,10 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-import { useGameStore, getViewMode } from '../stores/gameStore';
+import { useGameStore } from '../stores/gameStore';
 import { FILES, RANKS, Square, toSquare, isCastle, PieceColor, PieceType, boardToSerializable } from '../logic/pieces';
 import type { Piece } from '../logic/pieces';
 import PieceComponent, { getPieceSvg, getPieceHeightFactor } from './Piece';
 import { checkPromotion } from '../logic/promotion';
-import { checkScoutCapture } from '../logic/scout';
+import { validateMove, MSG_NO_MAJORITY, MSG_CASTLE_NON_ROYAL } from '../engine';
 
 // Design colors — matched to Figma mockup
 const COLORS = {
@@ -46,10 +46,8 @@ const Board: React.FC = () => {
     board, currentTurn, gameMode, gameStage, reversed, lastMove,
     promotionPending, selectedForDeletion,
     movePiece, removePiece, setSelectedForDeletion,
-    setPromotionPending,
+    setPromotionPending, setMoveMessage,
   } = useGameStore();
-
-  const viewMode = getViewMode({ gameMode, gameStage });
 
   // Responsive sizing — fixed margin from window edge / bars,
   // and the board NEVER grows past the available area (no overlap with bars).
@@ -135,78 +133,58 @@ const Board: React.FC = () => {
     if (!dragState) return;
 
     const targetSq = getSquareFromPos(e.clientX, e.clientY);
+    const hasSnap = !!(dragState.hoveredSquare && dragState.hoveredSquare !== dragState.fromSquare);
 
-    if (!targetSq) {
-      // Check if we have a last hovered square to snap to
-      if (dragState.hoveredSquare && dragState.hoveredSquare !== dragState.fromSquare) {
-        // Snap to last hovered square (between-cells case)
-        // Re-use normal path: set targetSq and fall through to all checks below
-        // (knekht restriction, scout capture, promotion)
-      } else {
-        // No valid snap target — piece disappears (dragged off board)
-        // Record in history so prevMove can undo this
-        const store = useGameStore.getState();
-        const newBoard = new Map(board);
-        newBoard.delete(dragState.fromSquare);
-        const nextTurn = store.currentTurn === PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
-        const nextMoveNumber = nextTurn === PieceColor.WHITE ? store.moveNumber + 1 : store.moveNumber;
-        const indicator = nextTurn === PieceColor.WHITE
-          ? `${nextMoveNumber}. __ хб`
-          : `${nextMoveNumber} … __ хч`;
-        const newHistory = store.history.slice(0, store.historyIndex + 1);
-        newHistory.push({
-          board: boardToSerializable(newBoard),
-          moveNumber: nextMoveNumber,
-          currentTurn: nextTurn,
-          indicator,
-          lastMove: { from: dragState.fromSquare, to: null },
-        });
-        useGameStore.setState({
-          board: newBoard,
-          currentTurn: nextTurn,
-          moveNumber: nextMoveNumber,
-          moveIndicator: indicator,
-          lastMove: { from: dragState.fromSquare, to: null },
-          history: newHistory,
-          historyIndex: newHistory.length - 1,
-        });
-        setDragState(null);
-        return;
-      }
+    // Dropped off the board with nothing to snap to → not a move, revert
+    // (the piece returns to its square; no state change).
+    if (!targetSq && !hasSnap) {
+      setDragState(null);
+      return;
     }
 
-    // Resolve actual target: either from getSquareFromPos or from snap
+    // Resolve actual target: either from getSquareFromPos or from snap.
     const resolvedSq: Square = targetSq || dragState.hoveredSquare!;
 
     if (resolvedSq === dragState.fromSquare) {
-      // Clicked same square — no move, just deselect drag
       setDragState(null);
       return;
     }
 
-    // Check if target has own piece
+    // Can't land on a friendly piece — silent revert.
     const targetPiece = board.get(resolvedSq);
     if (targetPiece && targetPiece.color === dragState.piece.color) {
-      // Can't place on own piece - snap back or go to last hovered
       setDragState(null);
       return;
     }
 
-    // Check scout special capture
-    const scoutResult = checkScoutCapture(dragState.piece, dragState.fromSquare, resolvedSq, board);
-    if (scoutResult) {
-      // Both pieces disappear
+    // ── Rules engine: validate before applying (§4–6) ───────────────────────
+    // Party enforces strict turn order (§9); analysis-play keeps its existing
+    // free-turn behaviour (turn already gated at pick-up), so no turn is passed
+    // to the validator there. Movement/force/castle rules apply in both modes.
+    const turn = gameMode === 'party' ? currentTurn : undefined;
+    const result = validateMove(board, dragState.fromSquare, resolvedSq, { turn });
+
+    if (!result.allowed) {
+      // §8: brief, non-blocking message only for forbidden *captures*; illegal
+      // simple moves / exchanges are rejected silently.
+      if (result.reason === MSG_NO_MAJORITY || result.reason === MSG_CASTLE_NON_ROYAL) {
+        setMoveMessage(result.reason);
+      }
+      setDragState(null);
+      return;
+    }
+
+    // Scout capture on a castle cell (§5): both attacker and target are removed.
+    if (result.capture === 'scout-exchange') {
+      const store = useGameStore.getState();
       const newBoard = new Map(board);
       newBoard.delete(dragState.fromSquare);
       newBoard.delete(resolvedSq);
-      const store = useGameStore.getState();
       const nextTurn = store.currentTurn === PieceColor.WHITE ? PieceColor.BLACK : PieceColor.WHITE;
       const nextMoveNumber = nextTurn === PieceColor.WHITE ? store.moveNumber + 1 : store.moveNumber;
       const indicator = nextTurn === PieceColor.WHITE
         ? `${nextMoveNumber}. __ хб`
         : `${nextMoveNumber} … __ хч`;
-
-      // Record in history
       const newHistory = store.history.slice(0, store.historyIndex + 1);
       newHistory.push({
         board: boardToSerializable(newBoard),
@@ -215,7 +193,6 @@ const Board: React.FC = () => {
         indicator,
         lastMove: { from: dragState.fromSquare, to: resolvedSq },
       });
-
       useGameStore.setState({
         board: newBoard,
         currentTurn: nextTurn,
@@ -229,18 +206,8 @@ const Board: React.FC = () => {
       return;
     }
 
-    // Knekht movement restrictions
-    const targetRank = parseInt(resolvedSq[1]);
-    if (dragState.piece.type === PieceType.KNEKHT && dragState.piece.color === PieceColor.WHITE && targetRank >= 7) {
-      setDragState(null);
-      return;
-    }
-    if (dragState.piece.type === PieceType.KNEKHT && dragState.piece.color === PieceColor.BLACK && targetRank <= 2) {
-      setDragState(null);
-      return;
-    }
-
-    // Normal move (including capture)
+    // Normal move or normal capture ('none' | 'normal'): movePiece overwrites
+    // the target cell, removing a captured enemy piece implicitly.
     movePiece(dragState.fromSquare, resolvedSq);
 
     // Promotions only in actual play — never during "Задать позицию".
@@ -270,7 +237,7 @@ const Board: React.FC = () => {
     }
 
     setDragState(null);
-  }, [dragState, board, movePiece, removePiece, getSquareFromPos, viewMode, setSelectedForDeletion, setPromotionPending]);
+  }, [dragState, board, currentTurn, gameMode, gameStage, movePiece, getSquareFromPos, setPromotionPending, setMoveMessage]);
 
   // Handle click for piece selection (for deletion)
   const handleClick = useCallback((e: React.MouseEvent) => {

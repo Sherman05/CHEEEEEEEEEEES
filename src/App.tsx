@@ -35,7 +35,7 @@ const App: React.FC = () => {
 
   const {
     board, currentTurn, moveNumber, gameMode, gameStage, reversed, partyFolder,
-    moveIndicator,
+    moveIndicator, moveMessage, setMoveMessage,
     startParty, startAnalysis, startAnalysisPlay, endSession,
     clearBoard, setFirstMoveTurn, toggleAlwaysOnTop,
     restoreSession,
@@ -43,6 +43,13 @@ const App: React.FC = () => {
   } = useGameStore();
 
   const viewMode = getViewMode({ gameMode, gameStage });
+
+  // §8: auto-dismiss the transient move message after a few seconds.
+  useEffect(() => {
+    if (!moveMessage) return;
+    const t = setTimeout(() => setMoveMessage(''), 3000);
+    return () => clearTimeout(t);
+  }, [moveMessage, setMoveMessage]);
 
   // Startup: check for saved session or show intro
   useEffect(() => {
@@ -409,6 +416,19 @@ const App: React.FC = () => {
           boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
         }}>
           {saveMessage}
+        </div>
+      )}
+
+      {/* §8: brief, non-blocking message for a rejected capturing move */}
+      {moveMessage && (
+        <div style={{
+          position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
+          padding: '8px 20px', backgroundColor: 'rgba(180, 60, 30, 0.92)',
+          color: '#fff', borderRadius: 6, fontSize: 14, zIndex: 300,
+          maxWidth: '80vw', textAlign: 'center',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        }}>
+          {moveMessage}
         </div>
       )}
     </div>
