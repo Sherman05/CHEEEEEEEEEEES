@@ -197,7 +197,7 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
               <img
                 src={getPieceSvg(opt)}
                 alt={getPieceName(opt.type)}
-                style={{ width: 34, height: 34, objectFit: 'contain' }}
+                style={{ width: 36, height: 36, objectFit: 'contain' }}
                 draggable={false}
               />
             </button>

@@ -106,30 +106,24 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
         <rect x="4" y="16" width="24" height="13" rx="2" ry="2"
               fill="#1a1a1a" stroke="#333" strokeWidth="0.8" />
       </svg>
-      {/* Dot indicator — marks whose turn is currently first.
-          Only ONE dot rendered at a time; the other key stays clean. */}
-      {currentTurn === 'white' && (
-        <div style={{
-          position: 'absolute',
-          left: '50%',
-          top: '30%',
-          width: 6, height: 6, borderRadius: '50%',
-          backgroundColor: '#333',
-          transform: 'translate(-50%, -50%)',
-          pointerEvents: 'none',
-        }} />
-      )}
-      {currentTurn === 'black' && (
-        <div style={{
-          position: 'absolute',
-          left: '50%',
-          top: '70%',
-          width: 6, height: 6, borderRadius: '50%',
-          backgroundColor: '#eee',
-          transform: 'translate(-50%, -50%)',
-          pointerEvents: 'none',
-        }} />
-      )}
+      {/* Dot indicator — a SINGLE element whose position and colour are
+          derived solely from currentTurn. Because there is only one dot,
+          it can never linger on the previous key: toggling white⇄black
+          just moves this one dot, so exactly one key is ever marked. */}
+      {(() => {
+        const isWhiteTurn = currentTurn === PieceColor.WHITE;
+        return (
+          <div style={{
+            position: 'absolute',
+            left: '50%',
+            top: isWhiteTurn ? '30%' : '70%',
+            width: 6, height: 6, borderRadius: '50%',
+            backgroundColor: isWhiteTurn ? '#333' : '#eee',
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+          }} />
+        );
+      })()}
     </button>
   );
 
@@ -256,7 +250,7 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
                 <img
                   src={getPieceSvg(opt)}
                   alt={getPieceName(opt.type)}
-                  style={{ width: 34, height: 34, objectFit: 'contain' }}
+                  style={{ width: 36, height: 36, objectFit: 'contain' }}
                   draggable={false}
                 />
               </button>
