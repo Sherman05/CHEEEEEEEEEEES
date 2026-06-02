@@ -65,6 +65,8 @@ interface GameState {
   setSelectedForDeletion: (sq: Square | null) => void;
   deleteSelectedPiece: () => void;
   setMoveMessage: (msg: string) => void;
+  /** Apply a play move already resolved by the engine (board + side computed). */
+  commitMove: (nextBoard: BoardState, nextTurn: PieceColor, from: Square, to: Square) => void;
   setShowIntro: (show: boolean) => void;
   setIntroSkipped: (skipped: boolean) => void;
   setSavedSession: (saved: boolean) => void;
@@ -337,6 +339,31 @@ export const useGameStore = create<GameState>((set, get) => ({
   setSelectedForDeletion: (sq) => set({ selectedForDeletion: sq }),
 
   setMoveMessage: (msg) => set({ moveMessage: msg }),
+
+  commitMove: (nextBoard, nextTurn, from, to) => {
+    const state = get();
+    const nextMoveNumber = nextTurn === PieceColor.WHITE ? state.moveNumber + 1 : state.moveNumber;
+    const indicator = buildIndicator(nextMoveNumber, nextTurn);
+    const lastMove = { from, to };
+    const newHistory = state.history.slice(0, state.historyIndex + 1);
+    newHistory.push({
+      board: boardToSerializable(nextBoard),
+      moveNumber: nextMoveNumber,
+      currentTurn: nextTurn,
+      indicator,
+      lastMove,
+    });
+    set({
+      board: nextBoard,
+      currentTurn: nextTurn,
+      moveNumber: nextMoveNumber,
+      lastMove,
+      history: newHistory,
+      historyIndex: newHistory.length - 1,
+      moveIndicator: indicator,
+      selectedForDeletion: null,
+    });
+  },
 
   deleteSelectedPiece: () => {
     const state = get();

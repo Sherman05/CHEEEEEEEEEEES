@@ -5,3 +5,4 @@ export * from './movement';
 export * from './forceField';
 export * from './placement';
 export * from './validator';
+export * from './resolveMove';
