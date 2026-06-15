@@ -25,6 +25,10 @@ export const MSG_NO_MAJORITY =
 // a simple step or a capture (incl. a would-be majority capture).
 export const MSG_CASTLE_NON_ROYAL =
   'Ход (простой или со взятием) некоролевской фигурой на поле замка невозможен';
+// §6 — the lone royal in its own castle may not step outside it while an enemy
+// royal shares the castle (doing so would hand the castle to the opponent).
+export const MSG_ROYAL_CASTLE_EXIT =
+  'Сейчас ход королевской фигуры за пределы своего замка невозможен – иначе замок будет захвачен противником';
 
 export interface ValidateOptions {
   /** Precomputed force field; computed from the board when omitted. */
@@ -84,9 +88,7 @@ export function validateMove(
   if (!target) return deny('Фигура так не ходит');
 
   if (!royalCastleAllowsExit(board, mover, from, to)) {
-    return deny(
-      'Королевская фигура одна в своём замке при королевской противника — ход за пределы замка запрещён',
-    );
+    return deny(MSG_ROYAL_CASTLE_EXIT);
   }
 
   const onCastle = isCastle(to);

@@ -4,7 +4,7 @@ import { FILES, RANKS, Square, toSquare, isCastle, PieceColor, PieceType, boardT
 import type { Piece } from '../logic/pieces';
 import PieceComponent, { getPieceSvg, getPieceHeightFactor } from './Piece';
 import { checkPromotion } from '../logic/promotion';
-import { resolveMove, MSG_NO_MAJORITY, MSG_CASTLE_NON_ROYAL } from '../engine';
+import { resolveMove, MSG_NO_MAJORITY, MSG_CASTLE_NON_ROYAL, MSG_ROYAL_CASTLE_EXIT } from '../engine';
 
 // Design colors — matched to Figma mockup
 const COLORS = {
@@ -161,9 +161,14 @@ const Board: React.FC = () => {
     const res = resolveMove(board, dragState.fromSquare, resolvedSq, turn);
 
     if (!res.allowed) {
-      // §8: brief, non-blocking message only for forbidden *captures*; illegal
-      // simple moves / exchanges (incl. same-square / onto-friendly) are silent.
-      if (res.reason === MSG_NO_MAJORITY || res.reason === MSG_CASTLE_NON_ROYAL) {
+      // §8: brief, non-blocking message for the spec'd rule rejections — no
+      // majority, a non-royal on a castle cell, and the §6 royal-castle-exit
+      // ban. Moves rejected on pure geometry or onto a friendly piece stay silent.
+      if (
+        res.reason === MSG_NO_MAJORITY ||
+        res.reason === MSG_CASTLE_NON_ROYAL ||
+        res.reason === MSG_ROYAL_CASTLE_EXIT
+      ) {
         setMoveMessage(res.reason);
       }
       setDragState(null);
