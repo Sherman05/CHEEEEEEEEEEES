@@ -86,18 +86,29 @@ export function validateMove(
     );
   }
 
+  const onCastle = isCastle(to);
+
+  // §1/§4 — only a royal piece may LAND on a castle cell, by a simple move OR a
+  // capture. Two documented exceptions: a Ver Knecht promoting onto an EMPTY
+  // castle cell, and the Scout's §5 castle exchange (a capture). Everything else
+  // — Knecht, Ritter, a VK onto an OCCUPIED castle, a Scout stepping onto an
+  // empty castle — is rejected (§8 message), whether the move is simple or a
+  // capture.
+  if (onCastle) {
+    const vkPromotion = mover.type === PieceType.VER_KNEKHT && !target.capture;
+    const scoutExchange = mover.type === PieceType.SCOUT && target.capture;
+    if (!isRoyal(mover.type) && !vkPromotion && !scoutExchange) {
+      return deny(MSG_CASTLE_NON_ROYAL);
+    }
+  }
+
   // Simple (non-capturing) move: movability + the restrictions above are enough (§4).
   if (!target.capture) return allow('none');
-
-  const onCastle = isCastle(to);
 
   // Scout specials (§5): unlimited capture on a normal cell; exchange on a castle.
   if (mover.type === PieceType.SCOUT) {
     return onCastle ? allow('scout-exchange') : allow('normal');
   }
-
-  // Only a royal piece may capture on a castle cell, even with a majority (§4).
-  if (onCastle && !isRoyal(mover.type)) return deny(MSG_CASTLE_NON_ROYAL);
 
   // Strict majority of attacking over defending force on the capture cell (§4).
   const field = opts.field ?? computeForceField(board);
