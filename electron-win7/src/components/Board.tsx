@@ -171,6 +171,12 @@ const Board: React.FC = () => {
       ) {
         setMoveMessage(res.reason);
       }
+      // Suppress the click that fires right after this drag-release. Without
+      // this, when the drop cell is occupied (illegal capture, onto-friendly,
+      // non-royal-on-castle, or any blocked move onto a piece) the trailing
+      // click would select that piece (red selection highlight) and leave it
+      // lit after the §8 toast fades. Matches the no-target / success branches.
+      justDraggedRef.current = true;
       setDragState(null);
       return;
     }
