@@ -35,7 +35,9 @@ interface GameState {
   lastMove: { from: Square | null; to: Square | null };
   history: HistoryEntry[];
   historyIndex: number;
-  promotionPending: { square: Square; piece: Piece; options: Piece[] } | null;
+  promotionPending: { square: Square; piece: Piece; options: Piece[]; frozenTypes?: PieceType[] } | null;
+  /** Once-per-game Prince→Konnet flag per colour (Stage 2 promotions). */
+  princeToConnetDone: { white: boolean; black: boolean };
   selectedForDeletion: Square | null;
   moveIndicator: string;
   /** Transient §8 message for a rejected capturing move (shown briefly, non-blocking). */
@@ -61,6 +63,7 @@ interface GameState {
   nextMove: () => void;
   setFirstMoveTurn: (color: PieceColor) => void;
   setPromotionPending: (p: GameState['promotionPending']) => void;
+  setPrinceToConnetDone: (s: { white: boolean; black: boolean }) => void;
   completePromotion: (piece: Piece) => void;
   setSelectedForDeletion: (sq: Square | null) => void;
   deleteSelectedPiece: () => void;
@@ -94,6 +97,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   history: [],
   historyIndex: -1,
   promotionPending: null,
+  princeToConnetDone: { white: false, black: false },
   selectedForDeletion: null,
   moveIndicator: '',
   moveMessage: '',
@@ -197,6 +201,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       history: [],
       historyIndex: -1,
       promotionPending: null,
+      princeToConnetDone: { white: false, black: false },
       selectedForDeletion: null,
       moveIndicator: '',
       partyFolder: null,
@@ -204,7 +209,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   clearBoard: () => {
-    set({ board: new Map(), selectedForDeletion: null });
+    set({ board: new Map(), selectedForDeletion: null, princeToConnetDone: { white: false, black: false } });
   },
 
   startParty: (folder) => {
@@ -229,6 +234,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       historyIndex: 0,
       moveIndicator: indicator,
       promotionPending: null,
+      princeToConnetDone: { white: false, black: false },
       selectedForDeletion: null,
     });
   },
@@ -245,6 +251,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       historyIndex: -1,
       moveIndicator: '',
       promotionPending: null,
+      princeToConnetDone: { white: false, black: false },
       selectedForDeletion: null,
       partyFolder: null,
     });
@@ -268,6 +275,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       historyIndex: 0,
       moveIndicator: indicator,
       selectedForDeletion: null,
+      princeToConnetDone: { white: false, black: false },
       lastMove: { from: null, to: null },
     });
   },
@@ -284,6 +292,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       historyIndex: -1,
       moveIndicator: '',
       promotionPending: null,
+      princeToConnetDone: { white: false, black: false },
       selectedForDeletion: null,
       partyFolder: null,
     });
@@ -327,6 +336,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   setFirstMoveTurn: (color) => set({ currentTurn: color }),
 
   setPromotionPending: (p) => set({ promotionPending: p }),
+
+  setPrinceToConnetDone: (s) => set({ princeToConnetDone: s }),
 
   completePromotion: (piece) => {
     const state = get();

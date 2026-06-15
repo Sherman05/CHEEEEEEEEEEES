@@ -1,9 +1,8 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { useGameStore } from '../stores/gameStore';
-import { FILES, RANKS, Square, toSquare, isCastle, PieceColor, PieceType, boardToSerializable } from '../logic/pieces';
+import { FILES, RANKS, Square, toSquare, isCastle, PieceColor, PieceType } from '../logic/pieces';
 import type { Piece } from '../logic/pieces';
 import PieceComponent, { getPieceSvg, getPieceHeightFactor } from './Piece';
-import { checkPromotion } from '../logic/promotion';
 import { resolveMove, MSG_NO_MAJORITY, MSG_CASTLE_NON_ROYAL, MSG_ROYAL_CASTLE_EXIT } from '../engine';
 
 // Design colors — matched to Figma mockup
@@ -45,9 +44,9 @@ const Board: React.FC = () => {
 
   const {
     board, currentTurn, gameMode, gameStage, reversed, lastMove,
-    promotionPending, selectedForDeletion,
+    promotionPending, selectedForDeletion, princeToConnetDone,
     movePiece, setSelectedForDeletion,
-    setPromotionPending, setMoveMessage, commitMove,
+    setPromotionPending, setPrinceToConnetDone, setMoveMessage, commitMove,
   } = useGameStore();
 
   // Responsive sizing — fixed margin from window edge / bars,
@@ -158,7 +157,7 @@ const Board: React.FC = () => {
     // resolveMove validates, builds the next board (capture kind) and next side;
     // this component only applies its result to the store + GUI.
     const turn = gameMode === 'party' ? currentTurn : undefined;
-    const res = resolveMove(board, dragState.fromSquare, resolvedSq, turn);
+    const res = resolveMove(board, dragState.fromSquare, resolvedSq, turn, princeToConnetDone);
 
     if (!res.allowed) {
       // §8: brief, non-blocking message for the spec'd rule rejections — no
@@ -182,40 +181,34 @@ const Board: React.FC = () => {
     }
 
     commitMove(res.nextBoard, res.nextTurn, dragState.fromSquare, resolvedSq);
+    // Carry the once-per-game Prince→Konnet flag forward (the engine updated it).
+    setPrinceToConnetDone(res.nextPromotionState);
 
-    // Promotions only in actual play, and never for a scout-exchange (the piece
-    // is gone). Never during "Задать позицию".
-    const movedPiece = dragState.piece;
-    const promotion =
-      res.captureKind !== 'scout-exchange' && gameStage === 'play'
-        ? checkPromotion(movedPiece, resolvedSq)
-        : null;
-    if (promotion) {
-      if (promotion.auto) {
-        // Auto-promote knekht -> ver_knekht (update board AND history)
-        const store = useGameStore.getState();
-        const newBoard = new Map(store.board);
-        newBoard.set(resolvedSq, { type: PieceType.VER_KNEKHT, color: movedPiece.color });
-        const newHistory = [...store.history];
-        if (newHistory.length > 0) {
-          newHistory[newHistory.length - 1] = {
-            ...newHistory[newHistory.length - 1],
-            board: boardToSerializable(newBoard),
-          };
-        }
-        useGameStore.setState({ board: newBoard, history: newHistory });
-      } else {
-        setPromotionPending({
-          square: resolvedSq,
-          piece: movedPiece,
-          options: promotion.options!,
-        });
-      }
+    // Auto-promotions (Knecht→ВК, Prince→Konnet) are already applied inside
+    // res.nextBoard — nothing more to do. Only a Ver Knecht promotion needs a
+    // player choice: drive the existing picker from the engine signal, building
+    // the option set (4 vs 2) and freezing the Prince/Konnet icons per the flags.
+    if (res.promotion?.kind === 'vk-dialog' && gameStage === 'play') {
+      const movedPiece = dragState.piece; // the Ver Knecht
+      const color = movedPiece.color;
+      const optionTypes =
+        res.promotion.set === 'four'
+          ? [PieceType.KONNET, PieceType.PRINCE, PieceType.RITTER, PieceType.SCOUT]
+          : [PieceType.KONNET, PieceType.PRINCE];
+      const frozenTypes: PieceType[] = [];
+      if (res.promotion.princeFrozen) frozenTypes.push(PieceType.PRINCE);
+      if (res.promotion.connetFrozen) frozenTypes.push(PieceType.KONNET);
+      setPromotionPending({
+        square: resolvedSq,
+        piece: movedPiece,
+        options: optionTypes.map((type) => ({ type, color })),
+        frozenTypes,
+      });
     }
 
     justDraggedRef.current = true;
     setDragState(null);
-  }, [dragState, board, currentTurn, gameMode, gameStage, commitMove, getSquareFromPos, setPromotionPending, setMoveMessage]);
+  }, [dragState, board, currentTurn, gameMode, gameStage, princeToConnetDone, commitMove, getSquareFromPos, setPromotionPending, setPrinceToConnetDone, setMoveMessage]);
 
   // Handle click for piece selection (for deletion)
   const handleClick = useCallback((e: React.MouseEvent) => {

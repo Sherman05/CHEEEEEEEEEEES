@@ -232,17 +232,23 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
             alignItems: 'center',
             gap: 3,
           }}>
-            {blackPromotion.options.map((opt, i) => (
+            {blackPromotion.options.map((opt, i) => {
+              // Stage 2: frozen Prince/Konnet options stay visible but dimmed
+              // and non-selectable (the "max three" rule).
+              const frozen = blackPromotion.frozenTypes?.includes(opt.type) ?? false;
+              return (
               <button
                 key={i}
-                onClick={() => completePromotion(opt)}
+                onClick={() => { if (!frozen) completePromotion(opt); }}
+                disabled={frozen}
                 title={getPieceName(opt.type)}
                 style={{
                   width: PROMOTION_PICK_BOX, height: PROMOTION_PICK_BOX, padding: 1,
                   border: '1px solid #555',
                   borderRadius: 3,
                   background: '#ffffff',
-                  cursor: 'pointer',
+                  cursor: frozen ? 'default' : 'pointer',
+                  opacity: frozen ? 0.35 : 1,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   boxShadow: '0 1px 2px rgba(0,0,0,0.4)',
                 }}
@@ -254,7 +260,8 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
                   draggable={false}
                 />
               </button>
-            ))}
+              );
+            })}
           </div>
         </>
       )}

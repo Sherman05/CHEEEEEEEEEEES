@@ -180,17 +180,23 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
       {/* White promotion picker — inline in flow, right of drag region, before window buttons */}
       {whitePromotion && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, zIndex: 2 }}>
-          {whitePromotion.options.map((opt, i) => (
+          {whitePromotion.options.map((opt, i) => {
+            // Stage 2: frozen Prince/Konnet options stay visible but dimmed and
+            // non-selectable (the "max three" rule).
+            const frozen = whitePromotion.frozenTypes?.includes(opt.type) ?? false;
+            return (
             <button
               key={i}
-              onClick={() => completePromotion(opt)}
+              onClick={() => { if (!frozen) completePromotion(opt); }}
+              disabled={frozen}
               title={getPieceName(opt.type)}
               style={{
                 width: 36, height: 36, padding: 1,
                 border: '1px solid #1a4080',
                 borderRadius: 3,
                 background: '#ffffff',
-                cursor: 'pointer',
+                cursor: frozen ? 'default' : 'pointer',
+                opacity: frozen ? 0.35 : 1,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
@@ -201,7 +207,8 @@ const TopBar: React.FC<TopBarProps> = ({ onPartyClick, onAnalysisClick, onMinimi
                 draggable={false}
               />
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
 
