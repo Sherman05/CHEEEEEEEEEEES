@@ -405,13 +405,18 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* §8: brief, non-blocking message for a rejected capturing move */}
+      {/* §8: brief, non-blocking message for a rejected move.
+          Design: Arial Narrow (Calibri fallback), bold, dark-blue text on a
+          light-orange fill with a blue border. Auto-dismiss timing unchanged. */}
       {moveMessage && (
         <div style={{
           position: 'fixed', bottom: 80, left: '50%', transform: 'translateX(-50%)',
-          padding: '8px 20px', backgroundColor: 'rgba(180, 60, 30, 0.92)',
-          color: '#fff', borderRadius: 6, fontSize: 14, zIndex: 300,
+          padding: '8px 20px', backgroundColor: '#ffe5c2',
+          color: '#002b80', borderRadius: 6, fontSize: 14, zIndex: 300,
           maxWidth: '80vw', textAlign: 'center',
+          fontFamily: "'Arial Narrow', Calibri, Arial, sans-serif",
+          fontWeight: 'bold',
+          border: '2px solid #1746c8',
           boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
         }}>
           {moveMessage}
