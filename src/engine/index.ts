@@ -6,3 +6,4 @@ export * from './forceField';
 export * from './placement';
 export * from './validator';
 export * from './resolveMove';
+export * from './promotion';
