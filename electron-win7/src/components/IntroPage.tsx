@@ -62,6 +62,7 @@ const INTRO_TEXT = `<b>Как пользоваться программой</b><
 const WIN_BTN: React.CSSProperties = {
   width: 30,
   height: 30,
+  flexShrink: 0,
   borderRadius: '50%',
   border: '1.5px solid #333',
   background: 'linear-gradient(180deg, #808080 0%, #606060 40%, #484848 70%, #383838 100%)',
