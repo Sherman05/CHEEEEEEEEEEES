@@ -25,3 +25,9 @@ dist-ssr
 electron-win7/node_modules/
 electron-win7/release/
 electron-win7/dist/
+
+# Local Claude Code settings (per-machine, not shared)
+.claude/
+
+# Stale intro-text draft (superseded by the committed version)
+/Вводная страница текст 1  (2).docx
