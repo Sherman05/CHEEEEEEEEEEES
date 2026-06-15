@@ -20,7 +20,7 @@ export interface MoveResult {
 // purely on geometry (not by the schema of the piece) or onto a friendly piece
 // stay silent; these reasons drive the transient toast.
 export const MSG_NO_MAJORITY =
-  'Ход со взятием невозможен — нет перевеса в силе на клетке взятия';
+  'Ход со взятием невозможен — нет перевеса в силе на поле взятия';
 // One message for a non-royal piece reaching a castle cell, whether the move is
 // a simple step or a capture (incl. a would-be majority capture).
 export const MSG_CASTLE_NON_ROYAL =
