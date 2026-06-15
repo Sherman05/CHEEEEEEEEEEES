@@ -75,4 +75,60 @@ describe('§1 castle landing — non-royal cannot land on a castle cell (simple 
     expect(r.allowed).toBe(true);
     expect(r.captureKind).toBe('scout-exchange');
   });
+
+  it('Scout SIMPLE step onto an EMPTY castle cell → rejected (only the exchange is exempt)', () => {
+    // Scout knight-jumps b3 → c1 (empty white castle): no capture, so not the
+    // §5 exchange exception — a non-royal landing, must be rejected.
+    const b = mk({ b3: [PieceType.SCOUT, W] });
+    const r = resolveMove(b, 'b3', 'c1', W);
+    expect(r.allowed).toBe(false);
+    expect(r.reason).toBe(MSG_CASTLE_NON_ROYAL);
+  });
+
+  it('non-royal CAPTURE with a clear force majority on a castle cell → still rejected', () => {
+    // Ritter b8 + Prince c7 give White 3.5 vs the lone black King 1.5 on c8 — a
+    // strict majority — yet the non-royal Ritter still cannot capture on the
+    // castle. Proves the castle gate fires BEFORE the force-majority check.
+    const b = mk({ b8: [PieceType.RITTER, W], c7: [PieceType.PRINCE, W], c8: [PieceType.KING, B] });
+    const r = resolveMove(b, 'b8', 'c8', W);
+    expect(r.allowed).toBe(false);
+    expect(r.reason).toBe(MSG_CASTLE_NON_ROYAL);
+  });
+
+  it('royal (Konnet) reaching a castle cell DIAGONALLY → allowed', () => {
+    // Konnet a3 → c1 is a 2-cell diagonal (Konnet diagonal ray, no jump); c1 is
+    // an empty white castle cell. Royal → allowed.
+    const b = mk({ a3: [PieceType.KONNET, W] });
+    const r = resolveMove(b, 'a3', 'c1', W);
+    expect(r.allowed).toBe(true);
+    expect(r.nextBoard.get('c1')).toEqual({ type: PieceType.KONNET, color: W });
+  });
+});
+
+// Black-side castle (c8 d8 e8 f8) — the knecht ray direction is colour-asymmetric
+// (forward = down for Black), so the black path is genuinely separate code.
+describe('§1 castle landing — black-side castle', () => {
+  it('black Ritter SIMPLE move onto an empty black castle cell → rejected', () => {
+    // Black Ritter c6 → c8 (2 cells orthogonally, jump allowed); c8 empty castle.
+    const b = mk({ c6: [PieceType.RITTER, B] });
+    const r = resolveMove(b, 'c6', 'c8', B);
+    expect(r.allowed).toBe(false);
+    expect(r.reason).toBe(MSG_CASTLE_NON_ROYAL);
+  });
+
+  it('black Ver Knecht onto an EMPTY black castle cell → allowed (promotion entry)', () => {
+    // Black VK e7 → e8 is one cell back (toward rank 8); e8 empty black castle.
+    const b = mk({ e7: [PieceType.VER_KNEKHT, B] });
+    const r = resolveMove(b, 'e7', 'e8', B);
+    expect(r.allowed).toBe(true);
+    expect(r.captureKind).toBe('none');
+    expect(r.nextBoard.get('e8')).toEqual({ type: PieceType.VER_KNEKHT, color: B });
+  });
+
+  it('black royal (Prince) onto a black castle cell → allowed', () => {
+    const b = mk({ d7: [PieceType.PRINCE, B] });
+    const r = resolveMove(b, 'd7', 'd8', B);
+    expect(r.allowed).toBe(true);
+    expect(r.nextBoard.get('d8')).toEqual({ type: PieceType.PRINCE, color: B });
+  });
 });
