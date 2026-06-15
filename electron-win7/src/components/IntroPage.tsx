@@ -109,26 +109,6 @@ const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForeve
           cursor: 'move',
         }}
       >
-        {/* Centered title — sits on top of the drag region, ignores pointer events */}
-        <div style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'none',
-          color: '#ffffff',
-          fontFamily: 'Arial, sans-serif',
-          fontSize: 16,
-          fontWeight: 'bold',
-          textShadow: '0 1px 2px rgba(0,0,0,0.4)',
-          letterSpacing: 0.3,
-        }}>
-          GI chess-T1
-        </div>
         {/* Program logo */}
         <img
           src={logoImg}
@@ -160,7 +140,35 @@ const IntroPage: React.FC<IntroPageProps> = ({ onEnterMain, onSkip, onSkipForeve
           Основной режим
         </button>
 
-        <div data-tauri-drag-region style={{ flex: 1, alignSelf: 'stretch', cursor: 'move' }} />
+        {/* Title lives in the flex space AFTER the "Основной режим" button and
+            BEFORE the window controls, centred there — same fix as the main
+            top bar. flexShrink:0 + nowrap keep "GI chess-T1" full and unclipped,
+            so it can never overlap the button when the window narrows. */}
+        <div
+          data-tauri-drag-region
+          style={{
+            flex: 1,
+            minWidth: 0,
+            alignSelf: 'stretch',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'visible',
+            cursor: 'move',
+          }}
+        >
+          <span style={{
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+            color: '#ffffff',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: 16,
+            fontWeight: 'bold',
+            textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+            letterSpacing: 0.3,
+            pointerEvents: 'none',
+          }}>GI chess-T1</span>
+        </div>
 
         {/* 3 round buttons: Minimize, AlwaysOnTop, Close */}
         <button onClick={onMinimize} style={WIN_BTN} title="Свернуть">
