@@ -32,10 +32,11 @@ const App: React.FC = () => {
   const [saveMessage, setSaveMessage] = useState('');
   const [showIntroPage, setShowIntroPage] = useState(false);
   const [returnFromIntro, setReturnFromIntro] = useState(false);
+  const [showPrinceHelp, setShowPrinceHelp] = useState(false);
 
   const {
     board, currentTurn, moveNumber, gameMode, gameStage, reversed, partyFolder,
-    moveIndicator, moveMessage, setMoveMessage,
+    moveIndicator, moveMessage, setMoveMessage, princeToConnetDone,
     startParty, startAnalysis, startAnalysisPlay, endSession,
     clearBoard, setFirstMoveTurn, toggleAlwaysOnTop,
     restoreSession,
@@ -206,6 +207,10 @@ const App: React.FC = () => {
     setShowIntroPage(true);
   }, []);
 
+  // §2.5.1 — help: report whether the once-per-game Prince→Konnet promotion
+  // happened for each side (reads princeToConnetDone from the store).
+  const handlePrinceHelp = useCallback(() => setShowPrinceHelp(true), []);
+
   const handleEnterMain = useCallback(() => {
     setShowIntroPage(false);
     setReturnFromIntro(false);
@@ -327,6 +332,7 @@ const App: React.FC = () => {
         <MenuPopup
           onClose={() => setShowMenu(false)}
           onAbout={handleAbout}
+          onPrinceHelp={handlePrinceHelp}
           onSavePosition={handleSavePosition}
           onSavePositionAs={handleSavePositionAs}
           onEndParty={handleEndPartyMenu}
@@ -435,6 +441,34 @@ const App: React.FC = () => {
           boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
         }}>
           {moveMessage}
+        </div>
+      )}
+
+      {/* §2.5.1 — Prince→Konnet promotion help (informational, not a §8 toast) */}
+      {showPrinceHelp && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300,
+        }}>
+          <div style={{
+            backgroundColor: '#f0f0f0', border: '2px solid #0028fa', borderRadius: 8,
+            padding: 24, minWidth: 340, maxWidth: '80vw', boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+            fontFamily: 'Arial, sans-serif',
+          }}>
+            <div style={{ fontSize: 14, color: '#1a1a1a', lineHeight: 1.7 }}>
+              Однократное превращение Принца в Коннета имело место:
+              <div style={{ marginTop: 8, paddingLeft: 12 }}>
+                — Для белых — {princeToConnetDone.white ? 'да' : 'нет'}<br />
+                — Для чёрных — {princeToConnetDone.black ? 'да' : 'нет'}
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
+              <button onClick={() => setShowPrinceHelp(false)} style={{
+                padding: '6px 16px', border: '1px solid #0028fa', borderRadius: 4,
+                backgroundColor: '#0068c8', color: '#fff', cursor: 'pointer', fontSize: 13,
+              }}>ОК</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

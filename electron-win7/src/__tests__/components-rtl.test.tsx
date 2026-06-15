@@ -375,6 +375,7 @@ describe('MenuPopup component', () => {
     const defaults = {
       onClose: vi.fn(),
       onAbout: vi.fn(),
+      onPrinceHelp: vi.fn(),
       onSavePosition: vi.fn(),
       onSavePositionAs: vi.fn(),
       onEndParty: vi.fn(),
@@ -803,13 +804,13 @@ describe('cross-component integration', () => {
     expect(screen.queryByText('GI chess-T1')).not.toBeInTheDocument();
   });
 
-  it('100. MenuPopup has 5 items in total', async () => {
+  it('100. MenuPopup has 6 items in total', async () => {
     const MenuPopup = (await import('../components/MenuPopup')).default;
     const { container } = render(
-      <MenuPopup onClose={vi.fn()} onAbout={vi.fn()} onSavePosition={vi.fn()} onSavePositionAs={vi.fn()} onEndParty={vi.fn()} onExit={vi.fn()} />
+      <MenuPopup onClose={vi.fn()} onAbout={vi.fn()} onPrinceHelp={vi.fn()} onSavePosition={vi.fn()} onSavePositionAs={vi.fn()} onEndParty={vi.fn()} onExit={vi.fn()} />
     );
-    // 5 menu items + backdrop div (not a button)
+    // 6 menu items + backdrop div (not a button): added "Справка: превращение Принца"
     const buttons = container.querySelectorAll('button');
-    expect(buttons.length).toBe(5);
+    expect(buttons.length).toBe(6);
   });
 });

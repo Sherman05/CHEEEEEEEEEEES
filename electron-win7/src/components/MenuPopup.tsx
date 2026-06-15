@@ -4,13 +4,14 @@ import { useGameStore, getViewMode } from '../stores/gameStore';
 interface MenuPopupProps {
   onClose: () => void;
   onAbout: () => void;
+  onPrinceHelp: () => void;
   onSavePosition: () => void;
   onSavePositionAs: () => void;
   onEndParty: () => void;
   onExit: () => void;
 }
 
-const MenuPopup: React.FC<MenuPopupProps> = ({ onClose, onAbout, onSavePosition, onSavePositionAs, onEndParty, onExit }) => {
+const MenuPopup: React.FC<MenuPopupProps> = ({ onClose, onAbout, onPrinceHelp, onSavePosition, onSavePositionAs, onEndParty, onExit }) => {
   const { gameMode, gameStage } = useGameStore();
   const viewMode = getViewMode({ gameMode, gameStage });
   const isStart = viewMode === 'start';
@@ -18,6 +19,9 @@ const MenuPopup: React.FC<MenuPopupProps> = ({ onClose, onAbout, onSavePosition,
 
   const items = [
     { label: 'О программе', action: onAbout, frozen: isStart ? false : false },
+    // §2.5.1 — active in Партия and Анализ-Игра (gameStage 'play'); disabled in
+    // Анализ-Задать позицию (setup) and on the start screen.
+    { label: 'Справка: превращение Принца', action: onPrinceHelp, frozen: isStart || isSetup },
     { label: 'Сохранить позицию', action: onSavePosition, frozen: isStart || isSetup },
     { label: 'Сохранить позицию как', action: onSavePositionAs, frozen: isStart || isSetup },
     { label: 'Завершить партию', action: onEndParty, frozen: isStart || isSetup },
