@@ -267,6 +267,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       indicator,
       lastMove: { from: null, to: null },
     };
+    // §2.5.2 — playing the ASSEMBLED position keeps princeToConnetDone as set in
+    // "Задать позицию" (toggled via the two setup buttons). Do NOT reset it here.
     set({
       gameStage: 'play',
       partyFolder: folder,
@@ -275,7 +277,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       historyIndex: 0,
       moveIndicator: indicator,
       selectedForDeletion: null,
-      princeToConnetDone: { white: false, black: false },
       lastMove: { from: null, to: null },
     });
   },

@@ -753,15 +753,15 @@ describe('IntroPage component', () => {
 // 96-100: Cross-component integration
 // ════════════════════════════════════════════════════════════════════════
 describe('cross-component integration', () => {
-  it('96. BottomBar in setup mode has 6 buttons total', async () => {
+  it('96. BottomBar in setup mode has 8 buttons total', async () => {
     useGameStore.getState().startAnalysis();
     const BottomBar = (await import('../components/BottomBar')).default;
     const { container } = render(
       <BottomBar onMenuClick={vi.fn()} onResetClick={vi.fn()} onOkClick={vi.fn()} onFirstMoveToggle={vi.fn()} />
     );
     const buttons = container.querySelectorAll('button');
-    // Меню, Сброс, Очередь, Готово, Удалить, Перевернуть
-    expect(buttons.length).toBe(6);
+    // Меню, Сброс, Очередь, Готово, Принц→Коннет (бел), Принц→Коннет (чёрн), Удалить, Перевернуть
+    expect(buttons.length).toBe(8);
   });
 
   it('97. BottomBar in play mode has 4 buttons', async () => {

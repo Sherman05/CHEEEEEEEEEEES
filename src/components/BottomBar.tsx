@@ -64,6 +64,8 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
   const selectedForDeletion = useGameStore((s) => s.selectedForDeletion);
   const promotionPending = useGameStore((s) => s.promotionPending);
   const completePromotion = useGameStore((s) => s.completePromotion);
+  const princeToConnetDone = useGameStore((s) => s.princeToConnetDone);
+  const setPrinceToConnetDone = useGameStore((s) => s.setPrinceToConnetDone);
   const blackPromotion = promotionPending && promotionPending.piece.color === PieceColor.BLACK
     ? promotionPending
     : null;
@@ -177,6 +179,41 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
     </button>
   ) : null;
 
+  // §2.5.2 — setup-only toggles: mark whether a one-time Prince→Konnet promotion
+  // already happened for each side in the position being assembled. The flag is
+  // carried into play (startAnalysisPlay no longer resets it).
+  // TODO: иконки заказчика (ТЗ 2.5.2) — пока временные плейсхолдеры (квадрат + ✓).
+  const renderPrinceToggle = (side: 'white' | 'black') => {
+    const on = princeToConnetDone[side];
+    const next = side === 'white'
+      ? { ...princeToConnetDone, white: !on }
+      : { ...princeToConnetDone, black: !on };
+    return (
+      <button
+        key={side}
+        onClick={() => setPrinceToConnetDone(next)}
+        title={`Принц→Коннет был: ${side === 'white' ? 'белые' : 'чёрные'}`}
+        style={{
+          width: BTN_SIZE, height: BTN_SIZE,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          border: on ? '2px solid #0a7a23' : '1.5px solid #888',
+          borderRadius: 4,
+          background: side === 'white' ? '#ffffff' : '#2b2b2b',
+          color: side === 'white' ? '#1a1a1a' : '#ffffff',
+          cursor: 'pointer',
+          fontSize: 9, fontWeight: 'bold', lineHeight: 1.1,
+          padding: 0,
+          opacity: on ? 1 : 0.55,
+          boxShadow: on ? '0 0 4px rgba(10,122,35,0.6)' : '0 1px 2px rgba(0,0,0,0.3)',
+        }}
+      >
+        <span>{side === 'white' ? 'Б' : 'Ч'}</span>
+        <span style={{ fontSize: 11 }}>{on ? '✓' : '—'}</span>
+      </button>
+    );
+  };
+
   return (
     <div data-bottombar style={{
       position: 'relative',
@@ -199,6 +236,8 @@ const BottomBar: React.FC<BottomBarProps> = ({ onMenuClick, onResetClick, onOkCl
           {ResetButton}
           {FirstMoveToggle}
           {OkButton}
+          {renderPrinceToggle('white')}
+          {renderPrinceToggle('black')}
           <div style={{ flex: 1 }} />
           {DeleteButton}
           {ReverseButton}
