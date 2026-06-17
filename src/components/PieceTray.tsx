@@ -21,8 +21,37 @@ interface PieceTrayProps {
   side: 'left' | 'right';
 }
 
+// Vertical space the column chrome eats besides the icons themselves:
+// padding (2px top + 2px bottom) + gaps (6 gaps × 2px between 7 rows) +
+// each row adds 4px around its icon (width/height = iconSize + 4).
+// overhead = 4 (padding) + 12 (gaps) + 7×4 (row borders) = 44px.
+const TRAY_COUNT = ALL_TYPES.length; // 7
+const TRAY_OVERHEAD = 4 + (TRAY_COUNT - 1) * 2 + TRAY_COUNT * 4;
+const TRAY_MIN_ICON = 16;
+
 const PieceTray: React.FC<PieceTrayProps> = ({ color, cellSize }) => {
-  const iconSize = cellSize * 0.85;
+  // Icon size is derived from the MEASURED container height — exactly like the
+  // board derives its cell size from its container — so it never depends on the
+  // Windows system text size. When the surrounding bars grow (e.g. larger system
+  // text), the available height shrinks and the icons shrink with it instead of
+  // overflowing the bottom edge. cellSize * 0.85 is only an UPPER cap so the tray
+  // looks identical to before whenever there is enough room.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [availHeight, setAvailHeight] = useState<number>(Infinity);
+
+  useEffect(() => {
+    const parent = containerRef.current?.parentElement;
+    if (!parent) return;
+    const recompute = () => setAvailHeight(parent.clientHeight);
+    recompute();
+    const ro = new ResizeObserver(recompute);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
+
+  const maxIcon = cellSize * 0.85;
+  const fitIcon = (availHeight - TRAY_OVERHEAD) / TRAY_COUNT;
+  const iconSize = Math.max(TRAY_MIN_ICON, Math.min(maxIcon, fitIcon));
   const [dragPiece, setDragPiece] = useState<Piece | null>(null);
   const [dragPos, setDragPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const placePiece = useGameStore((s) => s.placePiece);
@@ -84,7 +113,7 @@ const PieceTray: React.FC<PieceTrayProps> = ({ color, cellSize }) => {
 
   return (
     <>
-      <div style={{
+      <div ref={containerRef} style={{
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
