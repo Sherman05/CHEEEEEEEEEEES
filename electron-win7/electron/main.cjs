@@ -12,7 +12,7 @@ function createWindow() {
     width: 880,
     height: 680,
     minWidth: 600,
-    minHeight: 500,
+    minHeight: 600,
     frame: false,                 // frameless — matches Tauri decorations:false
     resizable: true,
     center: true,

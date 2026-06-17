@@ -1,7 +1,7 @@
 {
   "name": "gi-chess-t1-win7",
   "productName": "GI chess-T1",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "GI chess-T1 — Windows 7 compatible build",
   "private": true,
   "main": "electron/main.cjs",
