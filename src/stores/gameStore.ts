@@ -40,6 +40,9 @@ interface GameState {
   moveIndicator: string;
   /** Transient §8 message for a rejected capturing move (shown briefly, non-blocking). */
   moveMessage: string;
+  /** Destination cell of the rejected move — highlighted while moveMessage is up,
+   *  cleared together with it (shared lifecycle). */
+  rejectedSquare: Square | null;
   introSkipped: boolean;
   showIntro: boolean;
   savedSession: boolean;
@@ -64,7 +67,7 @@ interface GameState {
   completePromotion: (piece: Piece) => void;
   setSelectedForDeletion: (sq: Square | null) => void;
   deleteSelectedPiece: () => void;
-  setMoveMessage: (msg: string) => void;
+  setMoveMessage: (msg: string, rejectedSquare?: Square | null) => void;
   /** Apply a play move already resolved by the engine (board + side computed). */
   commitMove: (nextBoard: BoardState, nextTurn: PieceColor, from: Square, to: Square) => void;
   setShowIntro: (show: boolean) => void;
@@ -97,6 +100,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   selectedForDeletion: null,
   moveIndicator: '',
   moveMessage: '',
+  rejectedSquare: null,
   introSkipped: false,
   showIntro: true,
   savedSession: false,
@@ -352,7 +356,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   setSelectedForDeletion: (sq) => set({ selectedForDeletion: sq }),
 
-  setMoveMessage: (msg) => set({ moveMessage: msg }),
+  // Message and rejected-square highlight share one lifecycle: setting a message
+  // stores the cell it pointed at; clearing the message drops the highlight too.
+  setMoveMessage: (msg, rejectedSquare) =>
+    set({ moveMessage: msg, rejectedSquare: msg ? rejectedSquare ?? null : null }),
 
   commitMove: (nextBoard, nextTurn, from, to) => {
     const state = get();

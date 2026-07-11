@@ -18,6 +18,9 @@ const COLORS = {
   highlightLastMove: 'rgba(70, 130, 220, 0.45)',
   highlightLastMoveTo: 'rgba(255, 120, 130, 0.35)',
   highlightSelected: 'rgba(255, 100, 100, 0.35)',
+  // §8: destination cell of a rejected move — shown only while the toast is up.
+  // Amber, deliberately distinct from the pink/blue last-move highlights.
+  highlightRejected: 'rgba(255, 170, 30, 0.55)',
   cellBorder: 'rgba(0, 0, 0, 0.45)',
   gridLine: 'rgba(0, 0, 0, 0.45)',
   midLine: 'rgba(0, 0, 0, 0.95)',
@@ -45,10 +48,20 @@ const Board: React.FC = () => {
 
   const {
     board, currentTurn, gameMode, gameStage, reversed, lastMove,
-    promotionPending, selectedForDeletion,
+    promotionPending, selectedForDeletion, moveMessage, rejectedSquare,
     movePiece, setSelectedForDeletion,
     setPromotionPending, setMoveMessage, commitMove,
   } = useGameStore();
+
+  // §8: auto-dismiss the transient move message; the rejected-square highlight
+  // clears with it (shared store lifecycle in setMoveMessage). The §6
+  // royal-castle-exit message is longer, so it stays up ~0.7 s more.
+  useEffect(() => {
+    if (!moveMessage) return;
+    const ms = moveMessage === MSG_ROYAL_CASTLE_EXIT ? 3700 : 3000;
+    const t = setTimeout(() => setMoveMessage(''), ms);
+    return () => clearTimeout(t);
+  }, [moveMessage, setMoveMessage]);
 
   // Responsive sizing — fixed margin from window edge / bars,
   // and the board NEVER grows past the available area (no overlap with bars).
@@ -169,7 +182,8 @@ const Board: React.FC = () => {
         res.reason === MSG_CASTLE_NON_ROYAL ||
         res.reason === MSG_ROYAL_CASTLE_EXIT
       ) {
-        setMoveMessage(res.reason);
+        // The destination cell is highlighted for as long as the toast lives.
+        setMoveMessage(res.reason, resolvedSq);
       }
       // Suppress the click that fires right after this drag-release. Without
       // this, when the drop cell is occupied (illegal capture, onto-friendly,
@@ -394,10 +408,13 @@ const Board: React.FC = () => {
 
     // No special line between ranks 4 and 5 — same divider as everywhere else.
 
-    // Highlight priority: lastMove is king — nothing overwrites it after a move.
-    // During drag, show drag-related highlights instead.
+    // Highlight priority: the transient rejected-destination highlight (§8) wins
+    // while its toast is up; then lastMove is king — nothing overwrites it after
+    // a move. During drag, show drag-related highlights instead.
     let highlight = '';
-    if (dragState) {
+    if (rejectedSquare === sq) {
+      highlight = COLORS.highlightRejected;
+    } else if (dragState) {
       if (dragState.fromSquare === sq) {
         highlight = COLORS.highlightStart;
       } else if (dragState.hoveredSquare === sq && dragState.fromSquare !== sq) {
@@ -705,6 +722,31 @@ const Board: React.FC = () => {
           draggable={false}
         />
       );})()}
+
+      {/* §8: brief, non-blocking message for a rejected move — anchored right
+          below the board, centered on it. Overlapping the bottom files row /
+          indicator is fine per the customer; the side trays stay clear because
+          the toast never grows wider than the board container.
+          Design: Arial Narrow (Calibri fallback), bold, dark-blue text on a
+          warm-orange fill with a blue border. */}
+      {moveMessage && (
+        <div style={{
+          position: 'absolute',
+          top: innerOrigin + notationSize + boardSize + 2,
+          left: '50%', transform: 'translateX(-50%)',
+          padding: '8px 20px', backgroundColor: '#ffd199',
+          color: '#002b80', borderRadius: 6, fontSize: 14, zIndex: 500,
+          width: 'max-content', maxWidth: containerSize - 8,
+          boxSizing: 'border-box', textAlign: 'center',
+          fontFamily: "'Arial Narrow', Calibri, Arial, sans-serif",
+          fontWeight: 'bold',
+          border: '2px solid #1746c8',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          pointerEvents: 'none',
+        }}>
+          {moveMessage}
+        </div>
+      )}
     </div>
   );
 };
